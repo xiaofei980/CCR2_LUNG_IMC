@@ -1,0 +1,359 @@
+---
+title: "Normalization and scaling"
+author: "Xiaofei Yu"
+date: "06-1-2025"
+output: 
+  html_document:
+    theme:
+      spacelab
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    number_sections: false
+    highlight: textmate 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("dplyr")
+library("readr")
+library("stringr")
+```
+
+# LUNG CCR2KO data 
+
+The methods used in this document are based on a paper by van Maldegem et al.
+(2021). The data and analysis scripts of this paper were made publicly available by
+the authors and can be obtained [here](https://hdl.handle.net/10779/crick.c.5270621.v2).
+This project focuses on the analysis of Imaging Mass Cytometry (IMC) data of
+an experiment involving the mouse oral carcinoma cell lines MOC1 and MOC2.
+In this pipeline, the data is processed in three steps:
+
+- Segmentation (imcyto pipeline)
+- Normalisation and scaling (R)
+- Phenograph clustering (R)
+
+In this script we will perform normalisation and scaling of the cell segmentation data.
+During this step we load in the raw datafiles, normalise each individually,
+and concatenate them together, after which we scale the concatenated dataset.
+
+
+## Set global variables
+
+In this section, we set the parameters to correctly configure this script:
+- A list with names of the files that contain our data;
+- the path to these data files;
+- the path to a folder to which we wish to export our results. 
+
+```{r global-variables, include=TRUE, results=FALSE}
+# Obtain a list of paths to the datafiles
+base = "/mnt/Data1/groupfebe/runs/Xiaofei/CCR2_LUNG/"
+experiment_path = file.path(base, "Data/Normalization_input/AllCellsMask")
+OUTPUT_path = file.path(base, "Results/Normalscale_output")
+csvfileNames = file.path(experiment_path, list.files(experiment_path))
+# Save datafiles automatically?
+saveCSV = T
+
+# List of markers to be used for plotting
+
+# Define MARKERS vector
+MARKERS <- gsub("MI_", "", unique(colnames(celldatatemp)))
+MARKERS <- unlist(strsplit(MARKERS, ","))
+MARKERS_STRING <- paste0("MARKERS = c(", paste0('"', MARKERS, '"', collapse = ","), ")")
+
+# Print the formatted string
+cat(MARKERS_STRING)
+MARKERS < MARKERS_STRING
+# List of markers to be used for plotting
+
+# MARKERS = c("Argon80","B220","CD103","CD11b","CD11c","CD206","CD3e","CD44","CD45","CD4","CD68","CD86","CD8a","CK19","CXCL9","Casp3","DNA1","DNA2","EpCAM","F480","Foxp3","Ki67","LAG3","LY6G","Ly6C","MGL2","MHCII","NK1_1","PD1","PDL1","PDPN","PECAM","PVR","Sirpa","TCRgdt","TIM3","Thy1_2","Vimentin","Xenon131","Xenon132","aSMA","pS6")
+
+
+# Threshold for scaling
+THRESHOLD = 0.001
+
+# Obtain the current date to timestamp the generated files
+current_date = substr(gsub("-", "", Sys.Date()), 3, 8)
+```
+
+## Functions for normalisation
+
+The normalisation and scaling procedures are executed in three functions.
+Each function is annotated with a header, a function description
+and the desired inputs of the function. 
+
+```{r functions}
+#### CALCULATION OF NORMFACTOR WITH NORM CHANNEL AND PERCENTILE ####
+# This function calculates the normalisation factor of a normalisation channel
+# based on a percentile. The normalisation factor is such that after
+# normalization, the value at the given percentile is 1.
+# Input:  csvt    ->  dataframe with channels to be normalised
+#         normCH  ->  name of the normalisation channel
+#         probs   ->  numeric between 0 and 1 that indicates the percentile
+# Output: normalisation factor (numeric)
+extract.normfactor <- function(csvt, normCh, probs){
+  factor1 <- as.numeric(1/quantile(csvt[[normCh]], probs=probs))
+  
+  if (is.na(factor1)) {
+    print("factor1 set to 1 because the percentile was found to be zero.
+          Try increasing the threshold (thres) or the percentile (perctl).")
+    factor1 = 1
+  }
+  return(factor1)
+}
+
+#### NORMALISATION OF MARKER EXPRESSION WITHIN ONE IMAGE STACK ####
+# Normalise the marker expression within one image stack based on a channel
+# by multiplying with the normalisation factor of that channel
+# Input:  csvt    ->  dataframe with channels to be normalised
+#         normCh  ->  name of the normalisation channel
+#         probs   ->  numeric between 0 and 1 that indicates the percentile
+# Output: dataframe with normalised data
+normalise.csv = function(csvt, normCh, probs){
+  factor1 = extract.normfactor(csvt, normCh, probs)
+  print(paste("normalisation factor based on", normCh, "is factor: ", factor1))
+  for (Ch in c(1:ncol(csvt))){
+    csvt[,Ch] = csvt[,Ch]*factor1
+  }
+  return(csvt)
+}
+
+#### SCALING OF MARKER EXPRESSION BETWEEN CONCATENATED IMAGES STACKS ####
+# For each channel, a scaling factor is determined with all values above the
+# threshold, such that the value at the given percentile is set to 1.
+# Input:  csvt    ->  dataframe with channels to be scaled
+#         thres   ->  numeric in the positive range
+#         perctl  ->  numeric between 0 and 1 that indicates the percentile
+# Output: dataframe with scaled data
+normalise.stack = function(csvt, thres, perctl){
+  for (Ch in c(1:ncol(csvt))){
+    print(names(csvt[Ch]))
+    m = subset(csvt, csvt[,Ch]>thres)
+    factor1 = extract.normfactor(m, normCh=Ch, probs=perctl)
+    print(factor1)
+    csvt[,Ch] = csvt[,Ch]*factor1
+  }
+  return(csvt)
+}
+
+
+
+```
+
+
+
+```{r plotting}
+# Plot a histogram -------------------------------------------------------------
+# Description : Simple function to plot a histogram of mean intensity data for a
+#               given channel.
+# ---Parameters---
+# celldata  --> [dataframe] a dataframe with mean intensity data by marker
+# marker    --> [string] the name (without leading "MI_") of a column with mean
+#               intensity data
+# << Output >>  [image] a histogram plot
+# Obtain a list of paths to the datafiles
+
+histo = function(celldata, marker) {
+  hist(celldata[,paste0("MI_", marker)], main = marker, xlab = "Mean intensity")
+}
+
+# Plot a histogram -------------------------------------------------------------
+# Description : Create a plot with six histograms, one for each marker in the
+#               constant variable MARKERS
+# ---Parameters---
+# title     --> [string] the title of the plot
+# celldata  --> [dataframe] a dataframe with mean intensity data by marker
+# << Output >>  [image] a plot with 6 histograms
+plot.intensity = function(title, celldata) {
+  par(oma = c(1, 1, 5, 1), mfrow=c(2,3))
+  plot = sapply(X = MARKERS, FUN = histo, celldata = celldata)
+  title(title, cex.main = 2, outer = TRUE)
+}
+
+
+```
+
+## Normalisation
+
+In this step, two columns are added to the dataframe: filename (to be able to
+distinguish entries from different files after concatenation) and ExpGroup
+(based on the information in the filename).
+
+To show the effects of normalisation, we can plot a histogram of the
+mean intensities of six different markers for the first file before and after
+normalisation. As is apparent from these graphs, the data is normalized such
+that the mean of the normalization channel (Xenon132) is 1. Xenon132 is one of
+the driver gasses in IMC that should be detected similarly across different
+experiments. For this reason, it is a suitable as a marker for within stack
+normalisation. 
+
+```{r normalisation}
+#in this step ,imagemeatada come from fullstack ometiff
+print(Sys.time())
+print("Normalising data...")
+imagedata =read.csv(file.path(base, "Data/Normalization_input/imagemetadata.csv"),
+   stringsAsFactors = F)
+
+
+for(i in 1:length(csvfileNames))
+  {
+  # Read csv file
+  celldatatemp = read.csv(csvfileNames[i])
+  
+  filename = csvfileNames[i] %>%
+    str_remove(pattern = experiment_path) %>%
+    str_remove(pattern = "/") %>%
+    str_remove(pattern = "_AllCellsMask.csv")
+
+  print(filename)
+
+  
+  # Shorten columns names
+  colnames(celldatatemp) = str_remove(colnames(celldatatemp), "_c1") %>%
+    gsub(pattern = "Intensity_MeanIntensity", replacement = "MI")
+  
+  # Add filename column 
+  celldatatemp$filename = filename
+
+  # Assign experiment group column based on keywords in the filename
+   # Assign experiment group column based on keywords in the filename
+  exp_groups = c("WT",  "CCR2KO")
+  FUN = function (x) grepl(pattern = x, x = csvfileNames[i], ignore.case = T)
+  group = sapply(exp_groups, FUN)
+  celldatatemp$ExpGroup = names(group)[group]
+  
+  # Set apart the columns that do not need to be normalised:
+  excl_cols = c("ObjectNumber$", "Location_Center_X", "Location_Center_Y",
+               "TumourImage",  "NormalImage","StructuralImage",
+               "TumourminusInterface", "NormalminusInterface", "InterfaceImage", 
+                "Number_Object_Number", "AreaShape_Area",
+                "AreaShape_MajorAxisLength", "AreaShape_Perimeter",
+                "ImageNumber", "filename","ExpGroup")
+  
+  # Remove subset_data columns from celldatatemp
+  grep.columns = function (x) grep(pattern = x, x = names(celldatatemp), value = T)
+  subset_data = unlist(sapply(excl_cols, grep.columns))
+  celldata_subset = celldatatemp[,subset_data]
+  celldatatemp = celldatatemp[,!names(celldatatemp) %in% subset_data]
+  
+  # NORMALISATION - Call normalise.csv function for within stack normalisation
+  if (i == 1) plot.intensity(title = "Mean Intensity before normalisation",
+                             celldata = celldatatemp)
+
+  celldatatemp = normalise.csv(celldatatemp, "MI_Xenon132", c(0.5))
+  if (i == 1) plot.intensity(title = "Mean Intensity after normalisation",
+                             celldata = celldatatemp)
+
+  # Add in subset data
+  celldatatemp = cbind(celldatatemp, celldata_subset)
+
+  ## CONCATENATE THE DATA FILES ##
+  if(i == 1) {
+    celldata = celldatatemp
+    print("DONE")
+  }  
+  else {
+    # Combine multiple data files into one variable using rbind function
+    tryCatch(
+      {
+        celldata <- rbind(celldata,celldatatemp)
+      },
+      error = function(error_message){
+        message("There was an error concatenating the datasets together due to:")
+        message(error_message)
+      }
+    )
+    print("DONE")
+  }
+}
+
+
+print("Normalisation finished.")
+print(Sys.time())
+```
+
+## Scaling
+
+I assume that, due to differences in binding affinity of different markers,
+it is not possible to compare the mean intensities of different markers.
+Because of this, it is safe to scale each channel individually across all stacks.
+For scaling, values above the threshold up to the 99th percentile are used, to
+decrease the effects of exceptionally high or low values on the scaling.
+
+To demonstrate the effects of the scaling, we can plot a histogram of the
+mean intensities of six different markers before and after scaling. As is
+apparent from these graphs, the scaling results in a (relative) mean intensity
+approximately ranging from 0 to 1. 
+
+```{r scaling, include=TRUE}
+# SCALING - Call normalise.stack function for between stack scaling
+plot.intensity(title = "Mean Intensity before scaling", celldata = celldata)
+
+print("Scaling data...")
+print(Sys.time())
+
+celldata_subset = celldata[,subset_data]
+celldatatemp = celldata[,!names(celldata) %in% subset_data]
+celldatatemp = normalise.stack(csvt = celldatatemp,
+                               thres = THRESHOLD,
+                               perctl = c(0.99))
+celldata = cbind(celldatatemp, celldata_subset)
+
+print("Scaling finished.")
+print(Sys.time())
+
+plot.intensity(title = "Mean Intensity after scaling", celldata = celldata)
+```
+
+```{r post-processing}
+# ROI_ID: unique number per ROI _ ExpGroup  
+
+for (filename in unique(celldata$filename)){
+  n = str_pad(string = grep(filename, unique(celldata$filename)),
+              width = 2, side="left", pad="0")
+  celldata[which(celldata$filename == filename), "ROI_ID"] = n
+}
+
+celldata$ROI_ID = paste(celldata$ROI_ID, celldata$ExpGroup, sep = "_" )
+unique(celldata$ROI_ID)
+# Add column for mouse ID
+celldata$MouseID = sub(x = celldata$filename, pattern = "_[0-9]+$", replacement = "")
+unique(celldata$MouseID)
+celldata$MouseID <- sub(x = celldata$MouseID,pattern = "^ROI_|_ROI[0-9]+(_x[0-9]+)?$", replacement = "")
+# Display the unique MouseID values to verify the result
+unique(celldata$MouseID)
+#pattern = "ROI_MOC.?_[A-Z0-9]*_[A-Z0-9]{2}_[0-9]")
+celldata$cell_ID<-paste("Cell",1:nrow(celldata),sep="")
+# Generate columns to annotate domain ("Normal", "Tumour", "Interface")
+celldata$domain = as.character(celldata$MI_NormalminusInterface)
+celldata$domain[which(celldata$MI_NormalminusInterface>0)] = "Normal"
+celldata$domain[which(celldata$MI_TumourminusInterface>0)] = "Tumour"
+celldata$domain[which(celldata$MI_InterfaceImage>0)] = "Interface"
+celldata$domain[which(celldata$domain == "0")] = "n/a" #There is a small proportion
+unique(celldata$domain)
+table(celldata$domain)
+# Column domain2 also includes the "Structural" domain
+celldata$domain2 = celldata$domain
+celldata$domain2[which(celldata$MI_StructuralImage>0)] = "Structural"
+unique(celldata$domain2)
+
+
+```
+
+```{r}
+# Save normalised, concatenated and scaled file 
+if (saveCSV) {
+  file_path = paste0(OUTPUT_path, "/", current_date,
+                     "_normalised_concatenated_scaled_data_",
+                     sub(pattern = "0\\.", replacement = "", x = THRESHOLD),
+                     "threshold.csv")
+  
+  write.csv(celldata, row.names = F, file_path)
+  testaccuracy = read.csv(file_path)
+  print(all.equal(testaccuracy, celldata))
+  print("Normalised, concatenated and scaled file saved")
+  print(Sys.time())
+}
+```
