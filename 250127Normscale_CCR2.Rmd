@@ -49,9 +49,9 @@ In this section, we set the parameters to correctly configure this script:
 
 ```{r global-variables, include=TRUE, results=FALSE}
 # Obtain a list of paths to the datafiles
-base = "/mnt/Data1/groupfebe/runs/Xiaofei/CCR2_LUNG/"
-experiment_path = file.path(base, "Data/Normalization_input/AllCellsMask")
-OUTPUT_path = file.path(base, "Results/Normalscale_output")
+BASE = "/mnt/Data1/groupfebe/runs/Xiaofei/CCR2_LUNG/"
+experiment_path = file.path(BASE, "Data/Normalization_input/AllCellsMask")
+OUTPUT_PATH = file.path(BASE, "Results/Normalscale_output")
 csvfileNames = file.path(experiment_path, list.files(experiment_path))
 # Save datafiles automatically?
 saveCSV = T
@@ -334,6 +334,15 @@ celldata$domain[which(celldata$MI_InterfaceImage>0)] = "Interface"
 celldata$domain[which(celldata$domain == "0")] = "n/a" #There is a small proportion
 unique(celldata$domain)
 table(celldata$domain)
+#For later Anotation, add a new colume include both fileneme and ROI_ID 
+celldata <- celldata %>%
+  mutate(name = paste(ROI_ID, filename, sep = "_"))
+unique(celldata$name)
+
+# Add a new column "name" by combining "ROI_ID" and "filename"
+celldata <- celldata %>%
+  mutate(name = paste(ROI_ID, filename, sep = "_"))
+
 # Column domain2 also includes the "Structural" domain
 celldata$domain2 = celldata$domain
 celldata$domain2[which(celldata$MI_StructuralImage>0)] = "Structural"
@@ -345,11 +354,10 @@ unique(celldata$domain2)
 ```{r}
 # Save normalised, concatenated and scaled file 
 if (saveCSV) {
-  file_path = paste0(OUTPUT_path, "/", current_date,
+  file_path = paste0(OUTPUT_PATH, "/", current_date,
                      "_normalised_concatenated_scaled_data_",
                      sub(pattern = "0\\.", replacement = "", x = THRESHOLD),
                      "threshold.csv")
-  
   write.csv(celldata, row.names = F, file_path)
   testaccuracy = read.csv(file_path)
   print(all.equal(testaccuracy, celldata))
