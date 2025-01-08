@@ -1,4 +1,4 @@
-# test github
+# imagemtadata is for getting the width and Height  for the images
 library(exiftoolr)
 library(stringr)
 
