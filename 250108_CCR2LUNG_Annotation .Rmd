@@ -518,9 +518,30 @@ R manual annotation  K25
 celldata$anncluster = stringr::str_pad(celldata$k25, 2, side="left", pad="0") 
 unique(celldata$anncluster)
 # Split clusters based on thresholds for marker intensities
-celldata[which(celldata$anncluster == 28
+celldata[which(celldata$anncluster == "28"
                & celldata$MI_Foxp3 >= 0.5), "anncluster"] = "28A"
 celldata[which(celldata$anncluster == "28"), "anncluster"] = "28B"
+celldata[which(celldata$anncluster == "06"
+               & celldata$MI_CD68 >= 0.3), "anncluster"] = "06A"
+celldata[which(celldata$anncluster == "06"), "anncluster"] = "06B"
+celldata[which(celldata$anncluster == "17"
+               & celldata$MI_EpCAM >= 0.1), "anncluster"] = "17A"
+celldata[which(celldata$anncluster == "17"
+               & celldata$MI_F480 >= 0.5|celldata$MI_CD68 >= 0.5), "anncluster"] = "17B"
+celldata[which(celldata$anncluster == "17"), "anncluster"] = "17C"
+
+
+#  surround the tumour edge , a lot , have CD 11c and MHC II expression.A little bit CD68+ ,but F480-. so now i think it is mainly  DC population    Possible CD11c+macrophages cd11c and CD68 coexpression  should include MHCII for classification 
+# actually similar cluster as HNSCC cohort 
+# celldata[celldata$anncluster == "04" &
+#          celldata$MI_F480 >= 0.45|celldata$MI_CD68 >= 0.3, "anncluster"] = "04A" # mac
+#          # celldata$MI_F480 >= 0.35|celldata$MI_CD68 >= 0.25, "anncluster"] = "04A" # mac
+# celldata[celldata$anncluster == "04"&
+#            celldata$MI_MHCcII >= 0.5|celldata$MI_CD11c >= 0.7, "anncluster"] = "04B" # dc
+# celldata[celldata$anncluster == "04B"&
+#            celldata$MI_MHCcII < 0.55, "anncluster"] = "04A" # mac
+# celldata[celldata$anncluster == "04", "anncluster"] = "04C"#Tumour
+
 #250113 varified by xiaofei 
 
 celldata[which(celldata$anncluster == "01"), "anncluster"] = "01_Tumour"
@@ -528,19 +549,22 @@ celldata[which(celldata$anncluster == "02"), "anncluster"] = "02_Tumour" # match
 celldata[which(celldata$anncluster == "03"), "anncluster"] = "03_Neutrophils"
 celldata[which(celldata$anncluster == "04"), "anncluster"] = "04_Fibroblasts"
 celldata[which(celldata$anncluster == "05"), "anncluster"] = "05_Tumour"#
-celldata[which(celldata$anncluster == "06"), "anncluster"] = "06_Dendritic cells"# DC +Mac
-# not sure, surround the tumour edge , a lot , have CD 11c and MHC II expression. A little bit CD68+ ,but F480-. so now i think it is DC population
+celldata[which(celldata$anncluster == "06A"), "anncluster"] = "06A_Macrophages"
+celldata[which(celldata$anncluster == "06B"), "anncluster"] = "06B_Dendritic cells"
 celldata[which(celldata$anncluster == "07"), "anncluster"] = "07_Macrophages"
 celldata[which(celldata$anncluster == "08"), "anncluster"] = "08_Tumour"
 celldata[which(celldata$anncluster == "09"), "anncluster"] = "09_Tumour"#no marker 
 celldata[which(celldata$anncluster == "10"), "anncluster"] = "10_Tumour"
-celldata[which(celldata$anncluster == "11"), "anncluster"] = "11_Tumour"# not able to check F480 and EpCAm AND pecam in some images,  very small population maybe , but no F480 in3310
+celldata[which(celldata$anncluster == "11"), "anncluster"] = "11_Tumour"# 
 celldata[which(celldata$anncluster == "12"), "anncluster"] = "12_Dendritic cells CD103"
 celldata[which(celldata$anncluster == "13"), "anncluster"] = "13_Monocytes"#Ly6C and CD11b double positive 
 celldata[which(celldata$anncluster == "14"), "anncluster"] = "14_Tumour"
 celldata[which(celldata$anncluster == "15"), "anncluster"] = "15_Endothelium"
-celldata[which(celldata$anncluster == "16"), "anncluster"] = "16_Uncertain"# check later ..if small population , uncertain 
-celldata[which(celldata$anncluster == "17"), "anncluster"] = "17_Uncertain"#need to check other images, mainly CD11band F480  
+celldata[which(celldata$anncluster == "16"), "anncluster"] = "16_Tumour"#    small popolation ,seems tumour, few ly6C+
+celldata[which(celldata$anncluster == "17A"), "anncluster"] = "17A_Uncertain"
+celldata[which(celldata$anncluster == "17B"), "anncluster"] = "17B_Macrophages"
+celldata[which(celldata$anncluster == "17C"), "anncluster"] = "17C_Tumour"
+#need to check other images, mainly CD11b and F480  ,a liitle bit CD11c  CD11b spill over ,alots F480 CD68 
 celldata[which(celldata$anncluster == "18"), "anncluster"] = "18_Endothelium"
 celldata[which(celldata$anncluster == "19"), "anncluster"] = "19_Macrophages"
 celldata[which(celldata$anncluster == "20"), "anncluster"] = "20_Macrophages"
@@ -551,57 +575,19 @@ celldata[which(celldata$anncluster == "24"), "anncluster"] = "24_B cells"
 celldata[which(celldata$anncluster == "25"), "anncluster"] = "25_Tumour"
 celldata[which(celldata$anncluster == "26"), "anncluster"] = "26_Epithelium"
 celldata[which(celldata$anncluster == "27"), "anncluster"] = "27_T cell CD8"
-
+celldata[which(celldata$anncluster == "28A"), "anncluster"] = "28A_Tregs"
+celldata[which(celldata$anncluster == "28B"), "anncluster"] = "28B_T cell CD4"
 celldata[which(celldata$anncluster == "29"), "anncluster"] = "29_Macrophages"
-celldata[which(celldata$anncluster == "3"), "anncluster"] = "30_Fibroblasts"
-celldata[which(celldata$anncluster == "31"), "anncluster"] = "31_Uncertain"#CD11c +  need to check others 
-# Generate cluster annotation --------------------------------------------------
-# Description : Helper function to generate an column with manual annotation
-#               from a column with string converted (sub)clusters.
-# ---Parameters---
-# clusterCol  --> [vector] a vector of strings representing (sub)cluster numbers
-# << Output >>    [vector] A vector of cluster numbers followed by an underscore
-#                 and the respective manual annotation of the cluster
+celldata[which(celldata$anncluster == "30"), "anncluster"] = "30_Fibroblasts"
+celldata[which(celldata$anncluster == "31"), "anncluster"] = "31_Endothelium"
+#identify by images 
 
-
-# split 04 into DC ,MAC and tumour
-
-celldata[celldata$anncluster == "04" &
-         celldata$MI_F480 >= 0.45|celldata$MI_CD68 >= 0.3, "anncluster"] = "04A" # mac
-         # celldata$MI_F480 >= 0.35|celldata$MI_CD68 >= 0.25, "anncluster"] = "04A" # mac
-celldata[celldata$anncluster == "04"&
-           celldata$MI_MHCcII >= 0.5|celldata$MI_CD11c >= 0.7, "anncluster"] = "04B" # dc
-celldata[celldata$anncluster == "04B"&
-           celldata$MI_MHCcII < 0.55, "anncluster"] = "04A" # mac
-celldata[celldata$anncluster == "04", "anncluster"] = "04C"#Tumour
-# 4  mac and tumour and CD11c
-# add a B cell cluster 
-celldata[celldata$MI_B220 >= 0.3, "anncluster"] = "33"  
-celldata[celldata$MI_B220 >= 0.3 &
-           celldata$MI_CollagenI >= 0.5, "anncluster"] = "34"
-
-
-# # Split cluster 
-# celldata[celldata$anncluster == "08" &
-#            celldata$MI_F480 >= 0.25, "anncluster"] = "08A"
-# celldata[celldata$anncluster == "08", "anncluster"] = "08B"
-# celldata[celldata$anncluster == "22" &
-#            celldata$MI_CD11c >= 0.2, "anncluster"] = "22A"
-# celldata[celldata$anncluster == "22", "anncluster"] = "22B"
-
-# celldata[celldata$anncluster == "09" &
-#            celldata$MI_PancK >= 1, "anncluster"] = "09A"
-# celldata[celldata$anncluster == "09", "anncluster"] = "09B"
-
-
-# Generate a column "cluster2" that makes a string out of the cluster numbers
-celldata$anncluster = annotate.cluster(celldata$anncluster)
 
 celldata$annotation = str_split(celldata$anncluster,
                                       pattern = "_", simplify = TRUE)[,2]
 unique(celldata$annotation)
 annlevels = c("Tumour", "Fibroblasts", "Endothelium", 
-           "T cell CD8", "T cell CD4", "Tregs","TCRgdt", "Dendritic cells",
+           "T cell CD8", "T cell CD4", "Tregs", "Dendritic cells",
            "Dendritic cells CD103", "Macrophages", "Neutrophils", "B cells", "Uncertain")
 celldata$annotation = factor(celldata$annotation, levels = annlevels)
 table(celldata$anncluster)
@@ -623,60 +609,11 @@ plot.scatter(celldata, "k25", 2, Xmarker = "CD11b", Ymarker = "CD44",dim=0.9)
 plot.scatter(celldata, "k25", 2, Xmarker = "CD11b", Ymarker = "LY6G",dim=0.5)
 plot.scatter(celldata, "k25", 6, Xmarker = "CD11c", Ymarker = "F480",dim=1)
 plot.scatter(celldata, "k25", 6, Xmarker = "CD11c", Ymarker = "CD68",dim=1)
-plot.scatter(celldata, "k25", 6, Xmarker = "CD11c", Ymarker = "MHCII",dim=1)
-plot.scatter(celldata, "kinv25", 1, Xmarker = "PVR", Ymarker = "CD68",dim=1)
-plot.scatter(celldata, "kinv25", 1, Xmarker = "PDL1", Ymarker = "F480",dim=1)
-plot.scatter(celldata, "kinv25", 1, Xmarker = "PDL1", Ymarker = "CD68",dim=1)
-plot.scatter(celldata, "kinv25", 1, Xmarker = "PVR", Ymarker = "CD68",dim=1)
-plot.scatter(celldata, "kinv25", 1, Xmarker = "PVR", Ymarker = "F480",dim=1)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "CD44", Ymarker = "F480",dim=1.5)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "CD68", Ymarker = "CD44",dim=0.7)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "F480", Ymarker = "CD44",dim=0.7)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "CD11c", Ymarker = "CD44",dim=1.5)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "CD11c", Ymarker = "F480",dim=1)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "CD11c", Ymarker = "CD68",dim=1)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "CD11c", Ymarker = "CD206",dim=1.5)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "CD11c", Ymarker = "MHCcII",dim=1)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "MHCcII", Ymarker = "CD44",dim=1.5)
-plot.scatter(celldata[celldata$ROI_ID=="01_MOC2_CCR2KO",], "kinv25", 3, Xmarker = "CD206", Ymarker = "aSMA",dim=1.5)
-plot.scatter(celldata[celldata$ROI_ID=="05_MOC2_CCR2KO",], "kinv25", 3, Xmarker = "CD206", Ymarker = "aSMA",dim=1.5)
-plot.scatter(celldata[celldata$ROI_ID=="03_MOC2_CCR2KO",], "kinv25", 3, Xmarker = "CD206", Ymarker = "aSMA",dim=1.5)
-plot.scatter(celldata[celldata$ROI_ID=="06_MOC2_CCR2KO",], "kinv25", 3, Xmarker = "CD206", Ymarker = "aSMA",dim=1.5)
-plot.scatter(celldata, "kinv25", 3, Xmarker = "aSMA", Ymarker = "CD206",dim=1.5)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "CD11c", Ymarker = "CD11b",dim=0.4)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "CD11b", Ymarker = "CD44",dim=0.5)
-plot.scatter(celldata, "kinv25", 4, Xmarker = "LY6G", Ymarker = "CD11b",dim=0.5)
-plot.scatter3(celldata, "kinv25", 4, Xmarker = "CD44", Ymarker = "CD11c","MHCcII",dim=2)
-plot.scatter3(celldata, "kinv25", 4, Xmarker = "CD11c", Ymarker = "F480","MHCcII",dim=1)
-plot.scatter(celldata, "kinv25", 7, Xmarker = "CD68", Ymarker = "F480",dim=1)
-plot.scatter(celldata, "kinv25", 7, Xmarker = "CD68", Ymarker = "pS6",dim=0.7)
-plot.scatter(celldata, "kinv25", 7, Xmarker = "CD68", Ymarker = "CD44",dim=0.7)
-plot.scatter(celldata, "kinv25", 7, Xmarker = "CD68", Ymarker = "PVR",dim=0.7)
-plot.scatter(celldata, "kinv25", 7, Xmarker = "CD11b", Ymarker = "CD11c",dim=1)
-plot.scatter(celldata, "kinv25", 9, Xmarker = "aSMA", Ymarker = "CD44",dim=1)
-plot.scatter(celldata, "kinv25", 10, Xmarker = "F480", Ymarker = "CD68",dim=1)
-plot.scatter(celldata, "kinv25", 17, Xmarker = "CD11c", Ymarker = "CD44",dim=1.5)
-plot.scatter(celldata, "kinv25", 17, Xmarker = "MHCcII", Ymarker = "CD44",dim=1.5)
-plot.scatter(celldata, "kinv25", 17, Xmarker = "CD11c", Ymarker = "PVR",dim=1)
-plot.scatter(celldata, "kinv25", 17, Xmarker = "CD11c", Ymarker = "pS6",dim=1)
-plot.scatter(celldata, "kinv25", 17, Xmarker = "CD11c", Ymarker = "PDL1",dim=1)
-plot.scatter(celldata, "kinv25", 17, Xmarker = "F480", Ymarker = "CD44",dim=1)
-plot.scatter(celldata[celldata$ROI_ID=="08_MOC2_WT",], "kinv25", 17, Xmarker = "MHCcII", Ymarker = "CD11c",dim=2)
-plot.scatter(celldata[celldata$ROI_ID=="09_MOC2_WT",], "kinv25", 17, Xmarker = "MHCcII", Ymarker = "CD11c",dim=2)
-plot.scatter(celldata[celldata$ROI_ID=="10_MOC2_WT",], "kinv25", 17, Xmarker = "MHCcII", Ymarker = "CD11c",dim=2)
-plot.scatter(celldata[celldata$ROI_ID!="07_MOC2_WT",], "kinv25", 17, Xmarker = "MHCcII", Ymarker = "CD11c",dim=2)
-plot.scatter(celldata, "kinv25", 17, Xmarker = "MHCcII", Ymarker = "CD11c",dim=2)
-plot.scatter(celldata, "kinv25", 18, Xmarker = "F480", Ymarker = "CD24",dim=0.5)
-plot.scatter(celldata, "kinv25", 22, Xmarker = "PDL1", Ymarker = "CD44",dim=1)
-plot.scatter(celldata, "kinv25", 23, Xmarker = "CD11c", Ymarker = "CD44",dim=0.7)
-plot.scatter(celldata, "kinv25", 23, Xmarker = "MHCcII", Ymarker = "CD44",dim=1)
-plot.scatter(celldata, "kinv25", 23, Xmarker = "MHCcII", Ymarker = "CD103",dim=0.7)
-plot.scatter(celldata, "kinv25", 25, Xmarker = "F480", Ymarker = "EPCAM",dim=0.5)
-plot.scatter(celldata, "kinv25", 21, Xmarker = "LY6G", Ymarker = "CD11b",dim=1.5)
-plot.scatter(celldata, "kinv25", 32, Xmarker = "PancK", Ymarker = "aSMA",dim=3)
-plot.scatter(celldata, "kinv25", 18, Xmarker = "CD68", Ymarker = "CD44",dim=1)
-
-
+plot.scatter(celldata, "k25", 6, Xmarker = "CD68", Ymarker = "MHCII",dim=1)
+plot.scatter(celldata, "k25", 17, Xmarker = "CD11c", Ymarker = "CD68",dim=1)
+plot.scatter(celldata, "k25", 17, Xmarker = "F480", Ymarker = "CD44",dim=1)
+plot.scatter(celldata, "k25", 17, Xmarker = "CD44", Ymarker = "CD68",dim=1)
+plot.scatter(celldata, "k25", 17, Xmarker = "F480", Ymarker = "MHCII",dim=1)
 plot.scatter(celldata, "kinv25", 23, Xmarker = "CD11c", Ymarker = "MHCcII",dim=1)
 #plot.scatter3(celldata, "kinv25", 26, "CD4", "Foxp3", "ExpGroup")
 ggplot(celldata, aes(x = MI_MHCcII, y = MI_CD11c)) +
@@ -1221,12 +1158,8 @@ ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
   geom_point(data=celldata,size = 0.01, color = "black") +
    #geom_point(data = celldata[which(celldata$annotation=="Tumour"),], size = 0.01, colour = "yellow") +
   #geom_point(data = celldata[which(celldata$anncluster=="01A_Macrophages F480"),], size = 0.01, colour = "yellow") +
-   # geom_point(data = celldata[which(celldata$kinv25=="27"),], size = 0.01, colour = "yellow") +
-     # geom_point(data = celldata[which(celldata$kinv25=="28"),], size = 0.01, colour = "green") +
- #geom_point(data = celldata[which(celldata$kinv25=="17"&celldata$MI_CD11c>1&celldata$MI_MHCcII>1),], size = 0.01, colour = "red") +
-  #geom_point(data = celldata[which(celldata$MI_B220>0.3),], size = 0.01, colour = "red") +
-  # geom_point(data = celldata[which(celldata$MI_B220>0.3&celldata$MI_CollagenI>0.5),], size = 0.01, colour = "yellow") +
-geom_point(data = celldata[which(celldata$MI_Foxp3>0.5),], size = 0.01, colour = "red") +
+
+geom_point(data = celldata[which(celldata$k25=="31"),], size = 0.01, colour = "red") +
  # geom_point(data = celldata[which(celldata$kinv25=="20"),], size = 0.01, colour = "blue") +
   
   # geom_point(data = celldata[which(celldata$annotation=="Macrophages"),], size = 0.01, colour = "red") +
