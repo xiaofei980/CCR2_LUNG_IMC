@@ -62,6 +62,10 @@ columns_to_add <- c("cell_ID","tSNE1", "tSNE2")
 celldata <- left_join(x = celldata, y = celldata_subsample[,columns_to_add], 
                      by = "cell_ID")
 
+celldata <- celldata %>%
+  mutate(name = paste(ROI_ID, filename, sep = "_"))
+unique(celldata$name)
+
 
 create.resultsdir <- function(path, name) {
   dir_path <- file.path(path, name)
@@ -507,6 +511,7 @@ plot.heatmap2(celldata, lin_markers, "kinv25", title = "Cluster k40",
 plot.heatmap2(celldata, lin_markers, "kinv25", title = "Cluster k40",
               Colv = T, srtCol = 90, barplot = c("ExpGroup", "ROI_ID"), scale = "column")
 ```
+
 R manual annotation  K25
 ```{r manual annotation}
 # # Manually assign cluster labels ,current K25
@@ -516,39 +521,40 @@ unique(celldata$anncluster)
 celldata[which(celldata$anncluster == 28
                & celldata$MI_Foxp3 >= 0.5), "anncluster"] = "28A"
 celldata[which(celldata$anncluster == "28"), "anncluster"] = "28B"
-
+#250113 varified by xiaofei 
 
 celldata[which(celldata$anncluster == "01"), "anncluster"] = "01_Tumour"
-celldata[which(celldata$anncluster == "02"), "anncluster"] = "02_Tumour"
+celldata[which(celldata$anncluster == "02"), "anncluster"] = "02_Tumour" # match to raw images and not neutrophils ,mainly spill over 
 celldata[which(celldata$anncluster == "03"), "anncluster"] = "03_Neutrophils"
 celldata[which(celldata$anncluster == "04"), "anncluster"] = "04_Fibroblasts"
-celldata[which(celldata$anncluster == "05"), "anncluster"] = "05_Uncertain"
-celldata[which(celldata$anncluster == "06"), "anncluster"] = "06_Dendritic cells"
+celldata[which(celldata$anncluster == "05"), "anncluster"] = "05_Tumour"#
+celldata[which(celldata$anncluster == "06"), "anncluster"] = "06_Dendritic cells"# DC +Mac
+# not sure, surround the tumour edge , a lot , have CD 11c and MHC II expression. A little bit CD68+ ,but F480-. so now i think it is DC population
 celldata[which(celldata$anncluster == "07"), "anncluster"] = "07_Macrophages"
 celldata[which(celldata$anncluster == "08"), "anncluster"] = "08_Tumour"
-celldata[which(celldata$anncluster == "09"), "anncluster"] = "09_Uncertain"
+celldata[which(celldata$anncluster == "09"), "anncluster"] = "09_Tumour"#no marker 
 celldata[which(celldata$anncluster == "10"), "anncluster"] = "10_Tumour"
-celldata[which(celldata$anncluster == "11"), "anncluster"] = "11_Tumour"
+celldata[which(celldata$anncluster == "11"), "anncluster"] = "11_Tumour"# not able to check F480 and EpCAm AND pecam in some images,  very small population maybe , but no F480 in3310
 celldata[which(celldata$anncluster == "12"), "anncluster"] = "12_Dendritic cells CD103"
-celldata[which(celldata$anncluster == "13"), "anncluster"] = "13_mix"
+celldata[which(celldata$anncluster == "13"), "anncluster"] = "13_Monocytes"#Ly6C and CD11b double positive 
 celldata[which(celldata$anncluster == "14"), "anncluster"] = "14_Tumour"
 celldata[which(celldata$anncluster == "15"), "anncluster"] = "15_Endothelium"
-celldata[which(celldata$anncluster == "16"), "anncluster"] = "16_?"
-celldata[which(celldata$anncluster == "17"), "anncluster"] = "17_Macrophages"
-celldata[which(celldata$anncluster == "18"), "anncluster"] = "18_?"
-celldata[which(celldata$anncluster == "19"), "anncluster"] = "19_Macrophages or mix"
+celldata[which(celldata$anncluster == "16"), "anncluster"] = "16_Uncertain"# check later ..if small population , uncertain 
+celldata[which(celldata$anncluster == "17"), "anncluster"] = "17_Uncertain"#need to check other images, mainly CD11band F480  
+celldata[which(celldata$anncluster == "18"), "anncluster"] = "18_Endothelium"
+celldata[which(celldata$anncluster == "19"), "anncluster"] = "19_Macrophages"
 celldata[which(celldata$anncluster == "20"), "anncluster"] = "20_Macrophages"
-celldata[which(celldata$anncluster == "21"), "anncluster"] = "21_Macrophages?"
+celldata[which(celldata$anncluster == "21"), "anncluster"] = "21_Tumour"# B220 noise,F480 also noise 
 celldata[which(celldata$anncluster == "22"), "anncluster"] = "22_Macrophages"
 celldata[which(celldata$anncluster == "23"), "anncluster"] = "23_Epithelium"
 celldata[which(celldata$anncluster == "24"), "anncluster"] = "24_B cells"
-celldata[which(celldata$anncluster == "25"), "anncluster"] = "25_Macrophages"
+celldata[which(celldata$anncluster == "25"), "anncluster"] = "25_Tumour"
 celldata[which(celldata$anncluster == "26"), "anncluster"] = "26_Epithelium"
 celldata[which(celldata$anncluster == "27"), "anncluster"] = "27_T cell CD8"
-celldata[which(celldata$anncluster == "28"), "anncluster"] = "28_T cel CD4"
+
 celldata[which(celldata$anncluster == "29"), "anncluster"] = "29_Macrophages"
 celldata[which(celldata$anncluster == "3"), "anncluster"] = "30_Fibroblasts"
-celldata[which(celldata$anncluster == "31"), "anncluster"] = "31_mix"
+celldata[which(celldata$anncluster == "31"), "anncluster"] = "31_Uncertain"#CD11c +  need to check others 
 # Generate cluster annotation --------------------------------------------------
 # Description : Helper function to generate an column with manual annotation
 #               from a column with string converted (sub)clusters.
@@ -556,80 +562,7 @@ celldata[which(celldata$anncluster == "31"), "anncluster"] = "31_mix"
 # clusterCol  --> [vector] a vector of strings representing (sub)cluster numbers
 # << Output >>    [vector] A vector of cluster numbers followed by an underscore
 #                 and the respective manual annotation of the cluster
-annotate.cluster = function(clusterCol) {
-  for (cluster in unique(clusterCol)) {
-    newname = switch(cluster,
-                     "01" = "01_Tumour",
-                     "02" = "02_Tumour",
-                     "03" = "03_Neutrophils",
-                     "04" = "04_Fibroblasts",
-                     "05" = "05_Tumour",
-                     "06" = "06_Dendritic cells",
-                     "07" = "07_Macrophages",
-                     "08" = "08_Tumour",
-                     "09" = "09_Tumour",
-                     "10" = "10_Macrophages",
-                     "11A" = "11A_Tregs",
-                     "11B" = "11B_T cell CD4",
-                     "12" = "12_Neutrophils",
-                     "13" = "13_Endothelium",
-                     "14" = "14_Tumour",
-                     "15" = "15_Uncertain",
-                     "16" = "16_Dendritic cells CD103",
-                     "17" = "17_Dendritic cells",
-                     "18A" = "18A_Macrophages",
-                     "18B" = "18B_Tumour",
-                     "19" = "19_Fibroblasts",
-                     "20" = "20_Tumour",
-                     "21" = "21_Neutrophils",
-                     "22" = "22_Tumour",
-                     "23" = "23_Tumour",
-                     "24" = "24_Neutrophils",
-                     "25" = "25_Tumour",
-                     "26" = "26_Tumour",
-                     "27" = "27_Tumour",
-                     "28" = "28_Tumour",
-                     "29" = "29_TCRgdt",
-                     "30" = "30_Neutrophils",
-                     "31" = "31_Neutrophils",
-                     "32" = "32_Uncertain",
-                     "33" = "33_B cells",
-                     "34" = "34_Uncertain",
-                     "00_Undefined")
-    clusterCol[clusterCol == cluster] = newname
-  }
-  return(clusterCol)
-}
-# Generate a column "anncluster" that makes a string out of the cluster numbers
-celldata$anncluster = str_pad(celldata$kinv25, 2, side="left", pad="0")
 
-celldata[celldata$MI_B220 >= 0.3, "anncluster"] = "33"  
-celldata[celldata$MI_B220 >= 0.3 &
-           celldata$MI_CollagenI >= 0.5, "anncluster"] = "34"
-# # Split cluster 11 into T regs and CD 4 T Cells 
-celldata[celldata$anncluster == "11" &
-           celldata$MI_Foxp3 >= 0.4, "anncluster"] = "11A"
-celldata[celldata$anncluster == "11", "anncluster"] = "11B"
-
-# split cluster 1 and 7 to macrophages and tumour
-celldata[celldata$anncluster == "01" &
-           (celldata$MI_CD68 >= 0.35|celldata$MI_F480 >= 0.35), "anncluster"] = "01A" #mac
-celldata[celldata$anncluster == "01", "anncluster"] = "01B"#tumour
-# 07  mac and tumour and CD11c
-celldata[celldata$anncluster == "07" &
-          (celldata$MI_F480 >= 0.3|celldata$MI_CD68 >= 0.3), "anncluster"] = "07A"#mac
-celldata[celldata$anncluster == "07", "anncluster"] = "07B"# tumour
-
-celldata[celldata$anncluster == "18" &
-          celldata$MI_F480 >= 0.2, "anncluster"] = "18A"#mac
-celldata[celldata$anncluster == "18", "anncluster"] = "18B"# tumour
-
-# split cluster 17 to DC and Tumour and CD11c
-
-# celldata[celldata$anncluster == "17" & 
-#            celldata$MI_MHCcII >= 0.3 &
-#            celldata$MI_CD11c >= 0.3,"anncluster"] <- "17A"  # DC
-# celldata[celldata$anncluster == "17", "anncluster"] = "17B"#Mac?
 
 # split 04 into DC ,MAC and tumour
 
@@ -685,9 +618,12 @@ plot.heatmap2(celldata, lin_markers, "anncluster", title = "Annotated clusters",
 ```
 #checking annotation with scatter plot
 ```{r}
-plot.scatter(celldata, "kinv25", 1, Xmarker = "CD44", Ymarker = "MHCII",dim=1.5)
-plot.scatter(celldata, "kinv25", 1, Xmarker = "CD44", Ymarker = "CD24",dim=1.1)
-plot.scatter(celldata, "kinv25", 1, Xmarker = "PVR", Ymarker = "F480",dim=1)
+plot.scatter(celldata, "k25", 2, Xmarker = "LY6G", Ymarker = "CD44",dim=0.9)
+plot.scatter(celldata, "k25", 2, Xmarker = "CD11b", Ymarker = "CD44",dim=0.9)
+plot.scatter(celldata, "k25", 2, Xmarker = "CD11b", Ymarker = "LY6G",dim=0.5)
+plot.scatter(celldata, "k25", 6, Xmarker = "CD11c", Ymarker = "F480",dim=1)
+plot.scatter(celldata, "k25", 6, Xmarker = "CD11c", Ymarker = "CD68",dim=1)
+plot.scatter(celldata, "k25", 6, Xmarker = "CD11c", Ymarker = "MHCII",dim=1)
 plot.scatter(celldata, "kinv25", 1, Xmarker = "PVR", Ymarker = "CD68",dim=1)
 plot.scatter(celldata, "kinv25", 1, Xmarker = "PDL1", Ymarker = "F480",dim=1)
 plot.scatter(celldata, "kinv25", 1, Xmarker = "PDL1", Ymarker = "CD68",dim=1)
@@ -1006,11 +942,16 @@ MacFibTumNeuCD= generate.UMAP(celldata = celldata, clusters = MacFibTumNeuCluste
 set.seed(222)
 CellClusters= unique(celldata$anncluster)
 CellClusters
-CellColumns =  c("MI_EPCAM","MI_PancK","MI_PVR","MI_casp3","MI_CD44","MI_PDL1","MI_Ki67","MI_pS6","MI_CD11b","MI_LY6G","MI_aSMA","MI_Vimentin","MI_MHCcII", "MI_F480", "MI_CD103", "MI_PDL1", "MI_CD86",  "MI_CD68", "MI_CD206",  "MI_CD11c","MI_Thy1_2", "MI_CD3", "MI_CD45", "MI_CD4", "MI_CD8", "MI_Foxp3","MI_B220",
- "MI_LAG3", "MI_PD1", "MI_TCRgd", "MI_TIM3","MI_CollagenI", "MI_PECAM")
+# code for all_markers
+all_markers = all_markers[!all_markers %in% excl_cols]
+CellColumns <- paste0("all_markers = c(", paste0('"', all_markers, '"', collapse = ","), ")")
+# Print the formatted string
+cat(CellColumns)
+CellColumns = c("MI_B220","MI_CD103","MI_CD11b","MI_CD11c","MI_CD206","MI_CD3e","MI_CD44","MI_CD45","MI_CD4","MI_CD68","MI_CD86","MI_CD8a","MI_CK19","MI_CXCL9","MI_Casp3","MI_EpCAM","MI_F480","MI_Foxp3","MI_Ki67","MI_LAG3","MI_LY6G","MI_Ly6C","MI_MGL2","MI_MHCII","MI_NK1_1","MI_PD1","MI_PDL1","MI_PDPN","MI_PECAM","MI_PVR","MI_Sirpa","MI_TCRgdt","MI_TIM3","MI_Thy1_2","MI_Vimentin","MI_aSMA","MI_pS6")
+
 CellCD= generate.UMAP(celldata = celldata, clusters = CellClusters,
                             markers = CellColumns, nsample = 20000,
-                            filename = "241130CellCD.csv")
+                            filename = "250113CellCD.csv")
 
   }
 
@@ -1021,28 +962,28 @@ CellCD= generate.UMAP(celldata = celldata, clusters = CellClusters,
 ```{r}
 # Define the function to plot UMAP
 plot_umap <- function(data, color_var, plot_title, legend_title, file_name, subfolder) {
-  
-  # Create the ggplot
-  p <- ggplot(data, aes(x=umap1, y=umap2, colour = as.factor(data[[color_var]]))) + 
-    geom_point(size = 0.3) + 
-    ggtitle(plot_title) + 
-    guides(colour = guide_legend(override.aes = list(size = 5), title = legend_title)) +
-    theme_classic() + 
-    labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 12),
-          legend.text = element_text(size = 8),
-          legend.title = element_text(size = 10, face = "bold"),
-          plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
-          panel.grid = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_manual(values = cluster_cols)
-  # Save the plot
-  ggsave(filename = file_name,
-         path = file.path(OUTPUT_PATH,subfolder),
-         bg = "white",
-         width = 2100, height = 1700, units = "px")
-  return(p)
+
+# Create the ggplot
+p <- ggplot(data, aes(x=umap1, y=umap2, colour = as.factor(data[[color_var]]))) + 
+  geom_point(size = 0.3) + 
+  ggtitle(plot_title) + 
+  guides(colour = guide_legend(override.aes = list(size = 5), title = legend_title)) +
+  theme_classic() + 
+  labs(x = "UMAP 1", y = "UMAP 2") +
+  theme(plot.background = element_blank(),
+        axis.title = element_text(size = 12),
+        legend.text = element_text(size = 8),
+        legend.title = element_text(size = 10, face = "bold"),
+        plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
+        panel.grid = element_blank(),
+        axis.ticks = element_blank()) +
+  scale_color_manual(values = cluster_cols)
+# Save the plot
+ggsave(filename = file_name,
+       path = file.path(OUTPUT_PATH,subfolder),
+       bg = "white",
+       width = 2100, height = 1700, units = "px")
+return(p)
 }
 # T cell 
 plot_umap(TCD,color_var = "anncluster",plot_title="U-MAP T cells",legend_title = "Clusters",file_name="UMAP_T_cell_cluster.jpeg",subfolder = "UMAP/T_Cell_markers")
@@ -1285,7 +1226,7 @@ ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
  #geom_point(data = celldata[which(celldata$kinv25=="17"&celldata$MI_CD11c>1&celldata$MI_MHCcII>1),], size = 0.01, colour = "red") +
   #geom_point(data = celldata[which(celldata$MI_B220>0.3),], size = 0.01, colour = "red") +
   # geom_point(data = celldata[which(celldata$MI_B220>0.3&celldata$MI_CollagenI>0.5),], size = 0.01, colour = "yellow") +
-geom_point(data = celldata[which(celldata$MI_PancK>0.4),], size = 0.01, colour = "red") +
+geom_point(data = celldata[which(celldata$MI_Foxp3>0.5),], size = 0.01, colour = "red") +
  # geom_point(data = celldata[which(celldata$kinv25=="20"),], size = 0.01, colour = "blue") +
   
   # geom_point(data = celldata[which(celldata$annotation=="Macrophages"),], size = 0.01, colour = "red") +
@@ -2400,7 +2341,7 @@ plot.clusteroverlay = function(celldata, ROIdata, factor, levels, size = 1){
 plot.clusteroverlay(celldata = celldata, ROIdata = imagemetadata,
                     factor = "anncluster", levels = unique(celldata$anncluster))
 plot.clusteroverlay(celldata = celldata, ROIdata = imagemetadata,
-                    factor = "kinv25", levels = unique(celldata$kinv25))
+                    factor = "k25", levels = unique(celldata$k25))
 ```
 
 ##   CHCEKING DIFFERENT BETWEEN JPIETER AND ME 
