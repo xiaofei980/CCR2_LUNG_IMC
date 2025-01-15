@@ -482,6 +482,26 @@ plot.heatmap2(celldata, lin_markers, "k25",
 dev.off()
 
 
+### After annotation 
+pdf(file = paste0(OUTPUT_PATH,"/Heatmap/lin_makers_expression_anncluster.pdf"),width = 10,height = 6)
+plot.heatmap2(celldata, lin_markers, "anncluster",
+              title = "lin_marker_expression_anncluster",
+              margins = c(10, 9), srtCol = 55, transpose = F,Colv = F,Rowv = F,scale = "column")
+dev.off()
+
+pdf(file = paste0(OUTPUT_PATH,"/Heatmap/all_makers_expression_anncluster.pdf"),width = 10,height = 6)
+plot.heatmap2(celldata, all_markers, "anncluster",
+              title = "lin_marker_expression_anncluster",
+              margins = c(10, 9), srtCol = 55, transpose = F,Colv = F,Rowv = F,scale = "column")
+dev.off()
+
+pdf(file = paste0(OUTPUT_PATH,"/Heatmap/lin_makers_expression_annotation.pdf"),width = 10,height = 6)
+plot.heatmap2(celldata, lin_markers, "annotation",
+              title = "lin_marker_expression_annotation",
+              margins = c(10, 9), srtCol = 55, transpose = F,Colv = F,Rowv = F,scale = "column")
+dev.off()
+
+
 
 
 # plot.heatmap2(celldata, lin_markers, "k25", title = "Cluster k25",margins=c(1,0.5), Colv = T, srtCol = 90,barplot = c("ExpGroup","ROI_ID"))
@@ -517,40 +537,24 @@ R manual annotation  K25
 # # Manually assign cluster labels ,current K25
 celldata$anncluster = stringr::str_pad(celldata$k25, 2, side="left", pad="0") 
 unique(celldata$anncluster)
+table(celldata$anncluster)
 # Split clusters based on thresholds for marker intensities
 celldata[which(celldata$anncluster == "28"
                & celldata$MI_Foxp3 >= 0.5), "anncluster"] = "28A"
 celldata[which(celldata$anncluster == "28"), "anncluster"] = "28B"
-celldata[which(celldata$anncluster == "06"
-               & celldata$MI_CD68 >= 0.3), "anncluster"] = "06A"
-celldata[which(celldata$anncluster == "06"), "anncluster"] = "06B"
-celldata[which(celldata$anncluster == "17"
-               & celldata$MI_EpCAM >= 0.1), "anncluster"] = "17A"
-celldata[which(celldata$anncluster == "17"
-               & celldata$MI_F480 >= 0.5|celldata$MI_CD68 >= 0.5), "anncluster"] = "17B"
-celldata[which(celldata$anncluster == "17"), "anncluster"] = "17C"
+table(celldata$anncluster)
 
 
-#  surround the tumour edge , a lot , have CD 11c and MHC II expression.A little bit CD68+ ,but F480-. so now i think it is mainly  DC population    Possible CD11c+macrophages cd11c and CD68 coexpression  should include MHCII for classification 
-# actually similar cluster as HNSCC cohort 
-# celldata[celldata$anncluster == "04" &
-#          celldata$MI_F480 >= 0.45|celldata$MI_CD68 >= 0.3, "anncluster"] = "04A" # mac
-#          # celldata$MI_F480 >= 0.35|celldata$MI_CD68 >= 0.25, "anncluster"] = "04A" # mac
-# celldata[celldata$anncluster == "04"&
-#            celldata$MI_MHCcII >= 0.5|celldata$MI_CD11c >= 0.7, "anncluster"] = "04B" # dc
-# celldata[celldata$anncluster == "04B"&
-#            celldata$MI_MHCcII < 0.55, "anncluster"] = "04A" # mac
-# celldata[celldata$anncluster == "04", "anncluster"] = "04C"#Tumour
 
 #250113 varified by xiaofei 
-
+#Failed to capture the DC cluster. 
 celldata[which(celldata$anncluster == "01"), "anncluster"] = "01_Tumour"
 celldata[which(celldata$anncluster == "02"), "anncluster"] = "02_Tumour" # match to raw images and not neutrophils ,mainly spill over 
 celldata[which(celldata$anncluster == "03"), "anncluster"] = "03_Neutrophils"
 celldata[which(celldata$anncluster == "04"), "anncluster"] = "04_Fibroblasts"
 celldata[which(celldata$anncluster == "05"), "anncluster"] = "05_Tumour"#
-celldata[which(celldata$anncluster == "06A"), "anncluster"] = "06A_Macrophages"
-celldata[which(celldata$anncluster == "06B"), "anncluster"] = "06B_Dendritic cells"
+celldata[which(celldata$anncluster == "06"), "anncluster"] = "06_Macrophages"
+# very hard to split  because CD11c MHCII CD68 and F480 coexpression or single pression . possible DC is in this cluster
 celldata[which(celldata$anncluster == "07"), "anncluster"] = "07_Macrophages"
 celldata[which(celldata$anncluster == "08"), "anncluster"] = "08_Tumour"
 celldata[which(celldata$anncluster == "09"), "anncluster"] = "09_Tumour"#no marker 
@@ -561,10 +565,8 @@ celldata[which(celldata$anncluster == "13"), "anncluster"] = "13_Monocytes"#Ly6C
 celldata[which(celldata$anncluster == "14"), "anncluster"] = "14_Tumour"
 celldata[which(celldata$anncluster == "15"), "anncluster"] = "15_Endothelium"
 celldata[which(celldata$anncluster == "16"), "anncluster"] = "16_Tumour"#    small popolation ,seems tumour, few ly6C+
-celldata[which(celldata$anncluster == "17A"), "anncluster"] = "17A_Uncertain"
-celldata[which(celldata$anncluster == "17B"), "anncluster"] = "17B_Macrophages"
-celldata[which(celldata$anncluster == "17C"), "anncluster"] = "17C_Tumour"
-#need to check other images, mainly CD11b and F480  ,a liitle bit CD11c  CD11b spill over ,alots F480 CD68 
+celldata[which(celldata$anncluster == "17"), "anncluster"] = "17_Macrophages"
+#need to check other images, mainly CD11b and F480  ,a liitle bit CD11c  CD11b spill over ,a lots F480 CD68 
 celldata[which(celldata$anncluster == "18"), "anncluster"] = "18_Endothelium"
 celldata[which(celldata$anncluster == "19"), "anncluster"] = "19_Macrophages"
 celldata[which(celldata$anncluster == "20"), "anncluster"] = "20_Macrophages"
@@ -588,7 +590,7 @@ celldata$annotation = str_split(celldata$anncluster,
 unique(celldata$annotation)
 annlevels = c("Tumour", "Fibroblasts", "Endothelium", 
            "T cell CD8", "T cell CD4", "Tregs", "Dendritic cells",
-           "Dendritic cells CD103", "Macrophages", "Neutrophils", "B cells", "Uncertain")
+           "Dendritic cells CD103", "Macrophages","Monocytes", "Neutrophils", "B cells", "Uncertain")
 celldata$annotation = factor(celldata$annotation, levels = annlevels)
 table(celldata$anncluster)
 table(celldata$annotation)
@@ -599,6 +601,7 @@ celldata_count_perROI= celldata %>%
 
 # Order the levels of the annotation column
 plot.heatmap2(celldata, all_markers, "anncluster", title = "Annotated clusters",  margins = c(10, 5), srtCol = 60, Colv = T)
+plot.heatmap2(celldata, lin_markers, "cell_type", title = "Annotated clusters",  margins = c(10, 5), srtCol = 60, Colv = T)
 plot.heatmap2(celldata, lin_markers, "anncluster", title = "Annotated clusters",  margins = c(10, 5), srtCol = 60, Colv = T)
 plot.heatmap2(celldata, lin_markers, "anncluster", title = "Annotated clusters",  margins = c(10, 5), srtCol = 60, Colv = T,scale = "row")
 ```
@@ -607,13 +610,17 @@ plot.heatmap2(celldata, lin_markers, "anncluster", title = "Annotated clusters",
 plot.scatter(celldata, "k25", 2, Xmarker = "LY6G", Ymarker = "CD44",dim=0.9)
 plot.scatter(celldata, "k25", 2, Xmarker = "CD11b", Ymarker = "CD44",dim=0.9)
 plot.scatter(celldata, "k25", 2, Xmarker = "CD11b", Ymarker = "LY6G",dim=0.5)
-plot.scatter(celldata, "k25", 6, Xmarker = "CD11c", Ymarker = "F480",dim=1)
-plot.scatter(celldata, "k25", 6, Xmarker = "CD11c", Ymarker = "CD68",dim=1)
+plot.scatter(celldata, "k25", 6, Xmarker = "CD44", Ymarker = "F480",dim=1)
+plot.scatter(celldata, "k25", 6, Xmarker = "CD44", Ymarker = "CD68",dim=1)
 plot.scatter(celldata, "k25", 6, Xmarker = "CD68", Ymarker = "MHCII",dim=1)
-plot.scatter(celldata, "k25", 17, Xmarker = "CD11c", Ymarker = "CD68",dim=1)
-plot.scatter(celldata, "k25", 17, Xmarker = "F480", Ymarker = "CD44",dim=1)
-plot.scatter(celldata, "k25", 17, Xmarker = "CD44", Ymarker = "CD68",dim=1)
-plot.scatter(celldata, "k25", 17, Xmarker = "F480", Ymarker = "MHCII",dim=1)
+plot.scatter(celldata, "k25", 6, Xmarker = "CD68", Ymarker = "CD11c",dim=1)
+plot.scatter(celldata, "k25", 6, Xmarker = "F480", Ymarker = "CD11c",dim=1)
+plot.scatter(celldata, "k25", 6, Xmarker = "CD68", Ymarker = "MHCII",dim=1)
+plot.scatter(celldata, "k25", 6, Xmarker = "CD11c", Ymarker = "MHCII",dim=1)
+plot.scatter(celldata, "k25", 17, Xmarker = "CD11c", Ymarker = "CD68",dim=2)
+plot.scatter(celldata, "k25", 17, Xmarker = "TIM3", Ymarker = "CD44",dim=2)
+plot.scatter(celldata, "k25", 17, Xmarker = "CD44", Ymarker = "CK19",dim=2)
+plot.scatter(celldata, "k25", 17, Xmarker = "F480", Ymarker = "MHCII",dim=4)
 plot.scatter(celldata, "kinv25", 23, Xmarker = "CD11c", Ymarker = "MHCcII",dim=1)
 #plot.scatter3(celldata, "kinv25", 26, "CD4", "Foxp3", "ExpGroup")
 ggplot(celldata, aes(x = MI_MHCcII, y = MI_CD11c)) +
@@ -784,8 +791,9 @@ cluster_cols = c( "#FFF4A4FF",  "#ABDDA4FF", "#618F75FF",  "#336666",
 
 ```
 
-##
+##generate umap 
 ```{r new UMAPs}
+## Umap markers here is important , there are two ways : one is lineage marker to get less noise, another one is useing all the markers that expressed on clusters ,depend on use for checking the annotation or ..
 get.clusters = function(patterns) {
   clusters = sapply(X = patterns, FUN = grep, x = unique(celldata$anncluster), value = T)
   clusters = unlist(clusters, use.names = F)
@@ -824,6 +832,19 @@ set.seed(111)
                             markers = MacDendTumCellColumns, nsample = 20000,
                             filename = "241212MacDendTumCD.csv")
   
+    
+set.seed(222)  
+  # Macrophages & Dendritic cells
+  MacDendMonoTumCellClusters = get.clusters(patterns = c("Macrophage", "Dendritic","DC","Monocytes","Tumour"))
+  MacDendMonoTumCellColumns = c("MI_MHCII", "MI_F480", "MI_CD103", "MI_PDL1", "MI_CD86",
+                         "MI_CD68", "MI_CD206",  "MI_CD11c", "MI_CD11b","MI_LY6G","MI_EpCAM","MI_Ly6C", "MI_CK19","MI_PVR","MI_CD44","MI_PDL1") #, "MI_LY6G",  "MI_CD44")
+    MacDendMonoTumCellClusters = get.clusters(patterns = c("Macrophage", "Dendritic","DC","Monocytes","Tumour"))
+  MacDendMonoTumCellColumns_lineage = c("MI_MHCII", "MI_F480", "MI_CD103", 
+                         "MI_CD68",  "MI_CD11c", "MI_CD11b","MI_LY6G","MI_EpCAM","MI_Ly6C", "MI_CK19","MI_CD44") #, "MI_LY6G",  "MI_CD44")
+  MacDendMonoTumCD = generate.UMAP(celldata = celldata, clusters = MacDendMonoTumCellClusters,
+                            markers = MacDendMonoTumCellColumns_lineage, nsample = 20000,
+                            filename = "250115MacDendMonoTumCD.csv")
+  
   set.seed(222)  
   # Macrophages & Dendritic cells
   MacDendNeuCellClusters = get.clusters(patterns = c("Macrophage", "Dendritic","DC","Neutrophils"))
@@ -833,17 +854,19 @@ set.seed(111)
                             markers = MacDendNeuCellColumns, nsample = 20000,
                             filename = "241213MacDendNeuCD.csv")
   
-  
- set.seed(222)
-    # Macrophages
-  MacCellClusters = get.clusters(patterns = c("Macrophage"))
-  MacCellColumns = c("MI_MHCcII", "MI_F480", "MI_CD103", "MI_PDL1", "MI_CD86",
-                         "MI_CD68", "MI_CD206", "MI_CD11c", "MI_CD11b","MI_LY6G",  "MI_CD44") #, "MI_LY6G",  "MI_CD44")
-  MacCD = generate.UMAP(celldata = celldata, clusters = MacCellClusters,
-                            markers = MacCellColumns, nsample = 20000,
-                            filename = "241101MacCD.csv")
-  
-  
+    set.seed(111)  
+  # Macrophages & Dendritic cells & Monocytes 
+  MacDendMonoCellClusters = get.clusters(patterns = c("Macrophage", "Dendritic","DC","Monocytes"))
+  MacDendMonoCellColumns = c("MI_MHCII", "MI_F480", "MI_CD103", "MI_PDL1", "MI_CD86",
+                         "MI_CD68", "MI_CD206",  "MI_CD11c", "MI_CD11b","MI_LY6G",  "MI_CD44","MI_Ly6C") #, "MI_LY6G",  "MI_CD44")
+   MacDendMonoCellColumns_lineage= c("MI_MHCII", "MI_F480", "MI_CD103", 
+                        "MI_CD68",  "MI_CD11c", "MI_CD11b", "MI_Ly6C")
+  MacDendMonoCD = generate.UMAP(celldata = celldata, clusters = MacDendMonoCellClusters,
+                            markers = MacDendMonoCellColumns, nsample = 20000,
+                            filename = "250115_allmarkers_MacDendMonoCD.csv")
+  MacDendMonoCD = generate.UMAP(celldata = celldata, clusters = MacDendMonoCellClusters,
+                            markers = MacDendMonoCellColumns_lineage, nsample = 20000,
+                            filename = "250115_linmarkers_MacDendMonoCD.csv")
   
   
  set.seed(222) 
@@ -861,20 +884,6 @@ set.seed(111)
                         markers = TumourFibNeuColumns, nsample = 20000,
                         filename = "241101TumourFibNeuCD.csv")
   
-  set.seed(222)# Fibroblasts & endothelial cells
-  FibEndoClusters = get.clusters(patterns = c("Fibroblasts", "Endo"))
-  FibEndoColumns = c("MI_aSMA", "MI_PDL1", "MI_Thy1_2", "MI_Vimentin",
-                     "MI_CollagenI", "MI_PECAM")
-  FibEndoCD = generate.UMAP(celldata = celldata, clusters = FibEndoClusters,
-                            markers = FibEndoColumns, nsample = 20000,
-                            filename = "241101FibEndoCD.csv")
-set.seed(222)
-MacFibTumNeuClusters= get.clusters(patterns = c("Tumour","Fibroblasts","Macrophages",'Neutrophils',"Dendritic"))
-MacFibTumNeuClusters
-MacFibTumNeuColumns =  c("MI_EPCAM","MI_PancK","MI_PVR","MI_casp3","MI_CD44","MI_PDL1","MI_Ki67","MI_pS6","MI_CD11b","MI_LY6G","MI_aSMA","MI_Vimentin","MI_MHCcII", "MI_F480", "MI_CD103", "MI_PDL1", "MI_CD86",  "MI_CD68", "MI_CD206",  "MI_CD11c","MI_CollagenI")
-MacFibTumNeuCD= generate.UMAP(celldata = celldata, clusters = MacFibTumNeuClusters,
-                            markers = MacFibTumNeuColumns, nsample = 20000,
-                            filename = "241206MacDendFibTumNeuCD.csv")
 
 set.seed(222)
 CellClusters= unique(celldata$anncluster)
@@ -936,21 +945,21 @@ plot_umap(MacDendCD_filter,color_var = "annotation",plot_title="U-MAP MacDend ce
 plot_umap(MacDendCD_filter,color_var = "ExpGroup",plot_title="U-MAP MacDend cells",legend_title = "Group",file_name="UMAP_MacDendCD_group.jpeg",subfolder = "UMAP/MacDendCD_markers")
 
 
-MacDendNeuCD_filter<-MacDendNeuCD
-MacDendNeuCD_filter= MacDendNeuCD_filter[MacDendNeuCD_filter$umap1<10,]
-MacDendNeuCD_filter= MacDendNeuCD_filter[MacDendNeuCD_filter$umap2<15,]
+MacDendMonoCD_filter<-MacDendMonoCD
+MacDendMonoCD_filter= MacDendMonoCD_filter[MacDendMonoCD_filter$umap1>-15,]
+MacDendMonoCD_filter= MacDendMonoCD_filter[MacDendMonoCD_filter$umap2>-10,]
 #ggplot(MacDendCD_filter,aes(x=umap1,y=umap2,colour="ExpGroup"))
-plot_umap(MacDendNeuCD_filter,color_var = "anncluster",plot_title="U-MAP MacDendNeu cells",legend_title = "Clusters",file_name="UMAP_MacDendNeuCD_cluster.jpeg",subfolder = "UMAP/MacDendNeuCD_markers")
-plot_umap(MacDendNeuCD_filter,color_var = "annotation",plot_title="U-MAP MacDendNeu cells",legend_title = "Annotation",file_name="UMAP_MacDendNeuCD_annotation.jpeg",subfolder = "UMAP/MacDendNeuCD_markers")
-plot_umap(MacDendNeuCD_filter,color_var = "ExpGroup",plot_title="U-MAP MacDendNeu cells",legend_title = "Group",file_name="UMAP_MacDendNeuCD_group.jpeg",subfolder = "UMAP/MacDendNeuCD_markers")
+plot_umap(MacDendMonoCD_filter,color_var = "anncluster",plot_title="U-MAP MacDendMono cells",legend_title = "Clusters",file_name="UMAP_MacDendMonoCD_cluster.jpeg",subfolder = "UMAP/MacDendMonoCD_markers")
+plot_umap(MacDendMonoCD_filter,color_var = "annotation",plot_title="U-MAP MacDendMono cells",legend_title = "Annotation",file_name="UMAP_MacDendMonoCD_annotation.jpeg",subfolder = "UMAP/MacDendMonoCD_markers")
+plot_umap(MacDendMonoCD_filter,color_var = "ExpGroup",plot_title="U-MAP MacDendMono cells",legend_title = "Group",file_name="UMAP_MacDendMonoCD_group.jpeg",subfolder = "UMAP/MacDendMonoCD_markers")
 
-MacDendTumCD_filter<-MacDendTumCD
-MacDendTumCD_filter= MacDendTumCD_filter[MacDendTumCD_filter$umap1<10,]
-MacDendTumCD_filter= MacDendTumCD_filter[MacDendTumCD_filter$umap2<15,]
+MacDendMonoTumCD_filter<-MacDendMonoTumCD
+MacDendMonoTumCD_filter= MacDendMonoTumCD_filter[MacDendMonoTumCD_filter$umap1<10,]
+MacDendMonoTumCD_filter= MacDendMonoTumCD_filter[MacDendMonoTumCD_filter$umap2<15,]
 #ggplot(MacDendCD_filter,aes(x=umap1,y=umap2,colour="ExpGroup"))
-plot_umap(MacDendTumCD_filter,color_var = "anncluster",plot_title="U-MAP MacDendTum cells",legend_title = "Clusters",file_name="UMAP_MacDendTumCD_cluster.jpeg",subfolder = "UMAP/MacDendTumCD_markers")
-plot_umap(MacDendTumCD_filter,color_var = "annotation",plot_title="U-MAP MacDendTum cells",legend_title = "Annotation",file_name="UMAP_MacDendTumCD_annotation.jpeg",subfolder = "UMAP/MacDendTumCD_markers")
-plot_umap(MacDendTumCD_filter,color_var = "ExpGroup",plot_title="U-MAP MacDendTum cells",legend_title = "Group",file_name="UMAP_MacDendTumCD_group.jpeg",subfolder = "UMAP/MacDendTumCD_markers")
+plot_umap(MacDendMonoTumCD_filter,color_var = "anncluster",plot_title="U-MAP MacDendMonoTum cells",legend_title = "Clusters",file_name="UMAP_MacDendMonoTumCD_cluster.jpeg",subfolder = "UMAP/MacDendMonoTumCD_markers")
+plot_umap(MacDendMonoTumCD_filter,color_var = "annotation",plot_title="U-MAP MacDendMonoTum cells",legend_title = "Annotation",file_name="UMAP_MacDendMonoTumCD_annotation.jpeg",subfolder = "UMAP/MacDendMonoTumCD_markers")
+plot_umap(MacDendMonoTumCD_filter,color_var = "ExpGroup",plot_title="U-MAP MacDendMonoTum cells",legend_title = "Group",file_name="UMAP_MacDendMonoTumCD_group.jpeg",subfolder = "UMAP/MacDendMonoTumCD_markers")
 
 
 
@@ -958,14 +967,14 @@ plot_umap(MacDendTumCD_filter,color_var = "ExpGroup",plot_title="U-MAP MacDendTu
 plot_umap(TUMCD,color_var = "anncluster",plot_title="U-MAP Tumour cells",legend_title = "Clusters",file_name="UMAP_TUMCD_cluster.jpeg",subfolder = "UMAP/TUMCD_markers")
 plot_umap(TUMCD,color_var = "annotation",plot_title="U-MAP Tumour cells",legend_title = "Annotation",file_name="UMAP_TUMCD_annotation.jpeg",subfolder = "UMAP/TUMCD_markers")
 plot_umap(TUMCD,color_var = "ExpGroup",plot_title="U-MAP Tumour cells",legend_title = "Group",file_name="UMAP_TUMCD_group.jpeg",subfolder = "UMAP/TUMCD_markers")
-
-# myloid+fib+Tumor
-MacFibTumNeuCD_filter<-MacFibTumNeuCD
-MacFibTumNeuCD_filter= MacFibTumNeuCD_filter[MacFibTumNeuCD_filter$umap1>-10,]
-MacFibTumNeuCD_filter= MacFibTumNeuCD_filter[MacFibTumNeuCD_filter$umap2>-10,]
-plot_umap(MacFibTumNeuCD_filter,color_var = "anncluster",plot_title="U-MAP MacFibTumNeuCD cells",legend_title = "Clusters",file_name="UMAP_MacFibTumNeuCD_cluster.jpeg",subfolder = "UMAP/MacFibTumNeuCD_markers")
-plot_umap(MacFibTumNeuCD_filter,color_var = "annotation",plot_title="U-MAP MacFibTumNeuCD cells",legend_title = "Annotation",file_name="UMAP_MacFibTumNeuCD_annotation.jpeg",subfolder = "UMAP/MacFibTumNeuCD_markers")
-plot_umap(MacFibTumNeuCD_filter,color_var = "ExpGroup",plot_title="U-MAP MacFibTumNeuCD cells",legend_title = "Group",file_name="UMAP_MacFibTumNeuCD_group.jpeg",subfolder = "UMAP/MacFibTumNeuCD_markers")
+# 
+# # myloid+fib+Tumor
+# MacFibTumNeuCD_filter<-MacFibTumNeuCD
+# MacFibTumNeuCD_filter= MacFibTumNeuCD_filter[MacFibTumNeuCD_filter$umap1>-10,]
+# MacFibTumNeuCD_filter= MacFibTumNeuCD_filter[MacFibTumNeuCD_filter$umap2>-10,]
+# plot_umap(MacFibTumNeuCD_filter,color_var = "anncluster",plot_title="U-MAP MacFibTumNeuCD cells",legend_title = "Clusters",file_name="UMAP_MacFibTumNeuCD_cluster.jpeg",subfolder = "UMAP/MacFibTumNeuCD_markers")
+# plot_umap(MacFibTumNeuCD_filter,color_var = "annotation",plot_title="U-MAP MacFibTumNeuCD cells",legend_title = "Annotation",file_name="UMAP_MacFibTumNeuCD_annotation.jpeg",subfolder = "UMAP/MacFibTumNeuCD_markers")
+# plot_umap(MacFibTumNeuCD_filter,color_var = "ExpGroup",plot_title="U-MAP MacFibTumNeuCD cells",legend_title = "Group",file_name="UMAP_MacFibTumNeuCD_group.jpeg",subfolder = "UMAP/MacFibTumNeuCD_markers")
 
 #CellCD
 CellCD_filter<-CellCD
@@ -1012,9 +1021,9 @@ for (i in TCellMarkers){
   print(p)
 }
 ##MacDend markers
-for (i in MacDendCellColumns){
+for (i in MacDendMonoCellColumns){
   marker = str_remove(i, "MI_")
-  p = ggplot(MacDendCD_filter,
+  p = ggplot(MacDendMonoCD_filter,
              aes(x=umap1, y=umap2, colour = get(i))) + 
     geom_point(size = 0.3) + ggtitle(paste0("MacDend cell ", marker, " expression")) + 
     theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
@@ -1027,8 +1036,8 @@ for (i in MacDendCellColumns){
           #axis.text = element_blank(),
           axis.ticks = element_blank()) +
     scale_color_distiller(palette = "Spectral", limits = c(0,2))
-  ggsave(filename = paste0("UMAP_MacDend_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "UMAP/MacDendCD_markers"), bg = "white",
+  ggsave(filename = paste0("UMAP_MacDendMono_cell_", marker, "_expression.jpeg"),
+         path = file.path(OUTPUT_PATH, "UMAP/MacDendMonoCD_markers"), bg = "white",
          width = 2100, height = 1700, units = "px")
   print(p)
 }
@@ -1054,11 +1063,11 @@ for (i in TUMColumns){
   print(p)
 }
 ##plot MacDendFibTum marker  MacFibTumNeuCD
-for (i in MacDendFibTumColumns){
+for (i in MacDendMonoTumCellColumns){
   marker = str_remove(i, "MI_")
-  p = ggplot(MacDendFibTumCD_filter,
+  p = ggplot(MacDendMonoTumCD_filter,
              aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("MacDendFibTumCD cell ", marker, " expression")) + 
+    geom_point(size = 0.3) + ggtitle(paste0("MacDendMonoTumCD cell ", marker, " expression")) + 
     theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
     theme(plot.background = element_blank(),
           axis.title = element_text(size = 15),
@@ -1069,8 +1078,8 @@ for (i in MacDendFibTumColumns){
           #axis.text = element_blank(),
           axis.ticks = element_blank()) +
     scale_color_distiller(palette = "Spectral", limits = c(0,2))
-  ggsave(filename = paste0("UMAP_MacDendFibTumCD_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "UMAP/MacDendFibTumCD_markers"), bg = "white",
+  ggsave(filename = paste0("UMAP_MacDendMonoTumCD_cell_", marker, "_expression.jpeg"),
+         path = file.path(OUTPUT_PATH, "UMAP/MacDendMonoTumCD_markers"), bg = "white",
          width = 2100, height = 1700, units = "px")
   print(p)
 }
@@ -1159,7 +1168,9 @@ ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
    #geom_point(data = celldata[which(celldata$annotation=="Tumour"),], size = 0.01, colour = "yellow") +
   #geom_point(data = celldata[which(celldata$anncluster=="01A_Macrophages F480"),], size = 0.01, colour = "yellow") +
 
-geom_point(data = celldata[which(celldata$k25=="31"),], size = 0.01, colour = "red") +
+#geom_point(data = celldata[which(celldata$anncluster=="17A"),], size = 0.01, colour = "red") +
+geom_point(data = celldata[which(celldata$MI_CD11c>=0.5 &celldata$k25=="6"),], size = 0.01, colour = "yellow") +
+  #geom_point(data = celldata[which(celldata$k25=="17"),], size = 0.01, colour = "yellow") +
  # geom_point(data = celldata[which(celldata$kinv25=="20"),], size = 0.01, colour = "blue") +
   
   # geom_point(data = celldata[which(celldata$annotation=="Macrophages"),], size = 0.01, colour = "red") +
@@ -1816,276 +1827,7 @@ write.csv(stat_241105_ROI, file = output_file, row.names = F)
 ############################################################################################################################################################
 
 
-## plot marker expression (TCellMarkers)  on T-umap 
-```{r }
-for (i in TCellMarkers){
-  marker = str_remove(i, "MI_")
-  p = ggplot(TCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("T cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,1))
-  ggsave(filename = paste0("UMAP_T_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "TCellUMAP"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
 
-```
-
-
-## plot marker expression (MacDendCellColumns)  on Myeloid cells 
-```{r }
-p = ggplot(MacDendCD,
-           aes(x=umap1, y=umap2, colour = as.factor(anncluster))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP MacDend cells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Cluster")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-
-ggsave(filename = "UMAP_MacDend_cell_cluster.jpeg",
-       path = file.path(OUTPUT_PATH, "MacDendUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-## plot by ExpGroup    No function in advance here, so just rewrite code  
-p = ggplot(MacDendCD,
-           aes(x=umap1, y=umap2, colour = as.factor(ExpGroup))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP MacDendcells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Experimental group")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-ggsave(filename = "UMAP_MacDend_cell_ExpGroup.jpeg",
-       path = file.path(OUTPUT_PATH, "MacDendUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-
-for (i in MacDendCellColumns){
-  marker = str_remove(i, "MI_")
-  p = ggplot(MacDendCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("MacDend cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,3))
-  ggsave(filename = paste0("UMAP_MacDend_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "MacDendUMAP"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-```
-
-
-## plot marker expression (MacCellColumns)  on Mac cells 
-```{r }
-
-p = ggplot(MacCD,
-           aes(x=umap1, y=umap2, colour = as.factor(anncluster))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP Mac cells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Cluster")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-
-ggsave(filename = "UMAP_Mac_cell_cluster.jpeg",
-       path = file.path(OUTPUT_PATH, "MacUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-## plot by ExpGroup    No function in advance here, so just rewrite code  
-p = ggplot(MacCD,
-           aes(x=umap1, y=umap2, colour = as.factor(ExpGroup))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP Maccells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Experimental group")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-ggsave(filename = "UMAP_Mac_cell_ExpGroup.jpeg",
-       path = file.path(OUTPUT_PATH, "MacUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-
-for (i in MacCellColumns){
-  marker = str_remove(i, "MI_")
-  p = ggplot(MacCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("Mac cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,2))
-  ggsave(filename = paste0("UMAP_Mac_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "MacUMAP"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-
-for (i in TUMColumns){
-  marker = str_remove(i, "MI_")
-  p = ggplot(TUMCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("TUM cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,2))
-  ggsave(filename = paste0("UMAP_TUM_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "UMAP/TUMCD_markers"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-```
-
-
-
-
-## plot marker expression (FibEndoColumns)  on Fibroblasts and Endothelial
-```{r }
-
-p = ggplot(FibEndoCD,
-           aes(x=umap1, y=umap2, colour = as.factor(anncluster))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP FibEndo cells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Cluster")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-
-ggsave(filename = "UMAP_FibEndo_cell_cluster.jpeg",
-       path = file.path(OUTPUT_PATH, "FibEndoUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-## plot by ExpGroup    No function in advance here, so just rewrite code  
-p = ggplot(FibEndoCD,
-           aes(x=umap1, y=umap2, colour = as.factor(ExpGroup))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP FibEndocells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Experimental group")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-ggsave(filename = "UMAP_FibEndo_cell_ExpGroup.jpeg",
-       path = file.path(OUTPUT_PATH, "FibEndoUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-
-for (i in FibEndoColumns){
-  marker = str_remove(i, "MI_")
-  p = ggplot(FibEndoCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("FibEndo cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,1))
-  ggsave(filename = paste0("UMAP_FibEndo_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "FibEndoUMAP"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-```
-
-
-
-## plot marker expression (MacDebdFibTumNeuColumns)  on Myeloid cells 
-```{r }
-MacFibTumNeuCD_filtered <- MacFibTumNeuCD
-#MacFibTumNeuCD_filtered <- MacFibTumNeuCD_filtered[MacFibTumNeuCD_filtered$umap2 < 10,]
-MacFibTumNeuCD_filtered <- MacFibTumNeuCD_filtered[MacFibTumNeuCD_filtered$umap1 >-10,]
-p = ggplot(MacFibTumNeuCD_filtered,
-           aes(x=umap1, y=umap2, colour = as.factor(anncluster))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP MacFibTumNeuCD cells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Cluster")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 8),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = mycolors)
-
-ggsave(filename = "UMAP_MacFibTumNeuCD_cluster.jpeg",
-       path = file.path(OUTPUT_PATH, "241101_MacFibTumNeuCDUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-
-```
 
 ## plot by ExpGroup    No function in advance here, so just rewrite code  
 ```{r}
