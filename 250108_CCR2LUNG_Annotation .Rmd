@@ -802,9 +802,9 @@ get.clusters = function(patterns) {
 
 if (F) {
   # T cells
-  TCellClusters = get.clusters(patterns = c("T cell","TCR","Tregs"))
-  TCellMarkers = c("MI_CD3", "MI_CD45", "MI_CD4", "MI_CD8", "MI_Foxp3",
- "MI_LAG3", "MI_PD1", "MI_TCRgd", "MI_TIM3")
+  TCellClusters = get.clusters(patterns = c("T cell","Tregs"))
+  TCellMarkers_lineage = c("MI_CD3e", "MI_CD45", "MI_CD4", "MI_CD8a", "MI_Foxp3")
+    TCellMarkers = c("MI_CD3e", "MI_CD45", "MI_CD4", "MI_CD8a", "MI_Foxp3","MI_PD1","MI_TIM3","MI_LAG3")
   print(TCellClusters)
 # TColumns = c("CD103", "CD3e", "CD45", "CD4",  "Foxp3", "Ki67", "LAG3","CD8a",
 #  "PD1", "Casp3")
@@ -813,7 +813,7 @@ if (F) {
 # print(TCclusters)
 set.seed(222)
   TCD = generate.UMAP(celldata = celldata, clusters = TCellClusters,
-                      markers = TCellMarkers, nsample = 5000, filename = "241101TCD.csv")
+                      markers = TCellMarkers_lineage, nsample = 3000, filename = "250115TCD.csv")
 set.seed(111)  
   # Macrophages & Dendritic cells
   MacDendCellClusters = get.clusters(patterns = c("Macrophage", "Dendritic","DC"))
@@ -1169,7 +1169,9 @@ ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
   #geom_point(data = celldata[which(celldata$anncluster=="01A_Macrophages F480"),], size = 0.01, colour = "yellow") +
 
 #geom_point(data = celldata[which(celldata$anncluster=="17A"),], size = 0.01, colour = "red") +
-geom_point(data = celldata[which(celldata$MI_CD11c>=0.5 &celldata$k25=="6"),], size = 0.01, colour = "yellow") +
+
+  # geom_point(data = celldata[which(celldata$annotation%in% c("T cell CD8", "T cell CD8","Tregs")),], size = 0.01, colour = "red") +
+   geom_point(data = celldata[which(celldata$annotation=="T cell CD8"),], size = 0.01, colour = "yellow") +
   #geom_point(data = celldata[which(celldata$k25=="17"),], size = 0.01, colour = "yellow") +
  # geom_point(data = celldata[which(celldata$kinv25=="20"),], size = 0.01, colour = "blue") +
   
@@ -1198,7 +1200,7 @@ geom_point(data = celldata[which(celldata$MI_CD11c>=0.5 &celldata$k25=="6"),], s
         strip.background = element_rect(),
         panel.spacing = unit(0, "mm"),
         plot.background = element_blank())+
-  facet_wrap(~ROI_ID,nrow=3)
+  facet_wrap(~name,nrow=3)
 ```
 ##plot dots on one specific original image
 ```{r}
