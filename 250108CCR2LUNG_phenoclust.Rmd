@@ -49,7 +49,7 @@ BASE = "/mnt/Data1/groupfebe/runs/Xiaofei/CCR2_LUNG/"
 OUTPUT_PATH = file.path(BASE, "Data/Annotation_input")
 
 # Name of the file wi th normalised and scaled data:
-celldata =read.csv("/mnt/Data1/groupfebe/runs/Xiaofei/CCR2_LUNG/Results/Normalscale_output/250107_normalised_concatenated_scaled_data_001threshold.csv")
+celldata =read.csv("/mnt/Data1/groupfebe/runs/Xiaofei/CCR2_LUNG/Results/Normalscale_output/250218_normalised_concatenated_scaled_data_001threshold.csv")
 # check the celldata
 unique(colnames(celldata))
 unique(celldata$ROI_ID)
@@ -140,7 +140,9 @@ date = str_sub(gsub("-", "", Sys.Date()), -6, -1)
 file_path = paste0(OUTPUT_PATH, "/", date, "_clustering_k",
                    paste(kList, collapse = "_k"),
                    "_", length(COI_names), "markers.csv")
+
 write.csv(clusteringObject, file = file_path, row.names = F)
+print(paste("File saved at:", file_path))
 print(Sys.time())
 ```
 
