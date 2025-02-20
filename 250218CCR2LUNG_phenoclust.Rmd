@@ -1,0 +1,149 @@
+  ---
+title: "Phenograph clustering"
+author: "Xiaofei YU"
+date: "08-1-2025"
+output: 
+  html_document:
+    theme:
+      spacelab
+    toc: true
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+    number_sections: false
+    highlight: textmate 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(plyr)
+library(stringr)
+library(Rphenograph)
+library(dplyr)
+```
+
+# Van Maldegem IMC pipeline
+ ##The most impoortant part is set makers,here i use COI_names = c( "MI_CD45", "MI_CD4", "MI_CD3e", "MI_CD8a","MI_B220","MI_Foxp3","MI_TCRgdt",
+              "MI_CD68",  "MI_EpCAM", "MI_F480",  "MI_LY6G","MI_CD103", "MI_CD11b", "MI_CD11c", "MI_MHCII", "MI_Ly6C", 
+          "MI_PECAM", "MI_aSMA",  "MI_CD44", "MI_CK19") 
+
+## Set global variables
+
+In this section, we set the input and output directories of this script and
+select a data file. This file should contain normalised and scaled IMC data.
+Furthermore, we create a vector with the names of the columns that should
+be used for clustering.
+
+In this data analysis strategy, we only use lineage markers for clustering to
+optimise the clustering results. 
+
+Q: Why these markers?
+
+```{r global-variables, include=TRUE, results=FALSE}
+# Project folder path:
+BASE = "/mnt/Data1/groupfebe/runs/Xiaofei/CCR2_LUNG/"
+
+# Name of input and output directories:
+OUTPUT_PATH = file.path(BASE, "Data/Annotation_input")
+
+# Name of the file wi th normalised and scaled data:
+celldata =read.csv("/mnt/Data1/groupfebe/runs/Xiaofei/CCR2_LUNG/Results/Normalscale_output/250218_normalised_concatenated_scaled_data_001threshold.csv")
+# check the celldata
+unique(colnames(celldata))
+unique(celldata$ROI_ID)
+unique(celldata$MouseID)
+unique(celldata$ExpGroup)
+unique(celldata$domain)
+unique(celldata$domain2)
+unique(celldata$filename)
+unique(celldata$name)
+
+
+# Add a new column "name" by combining "ROI_ID" and "filename",if the post preprocessing include this step  then dont have to do it here,
+celldata <- celldata %>%
+  mutate(name = paste(ROI_ID, filename, sep = "_"))
+unique(celldata$name)
+# Names of columns to be used for clustering: 
+COI_names = c( "MI_CD45", "MI_CD4", "MI_CD3e", "MI_CD8a","MI_B220","MI_Foxp3",
+              "MI_CD68",  "MI_EpCAM", "MI_F480",  "MI_LY6G","MI_CD103", "MI_CD11b", "MI_CD11c", "MI_MHCII", "MI_Ly6C",
+              "MI_PECAM", "MI_aSMA",  "MI_CD44", "MI_CK19")
+#checking the name
+COI_names1 <- COI_names[!COI_names %in% colnames(celldata)]
+COI_names1
+kList = c(30,25,20,15) #c(75, 50, 40, 30, 25, 20, 15, 10)
+    ```
+
+## Phenograph clustering
+
+### Create object with clustering with multiple k's
+
+```{r}
+# Create a clustering object ---------------------------------------------------
+# Description : This function creates a dataframe that holds clustering annotation
+#               with different k levels
+# ---Parameters---
+# celldata  --> [dataframe] dataframe where rows denote individual cells, and
+#               columns denote mean intensity of each channel
+# COInames  --> [vector] names of the columns that should be used for clustering
+# Klist     --> [vector] value between 0 and 1 that indicates the percentile
+# << Output >>  [dataframe] dataframe where rows denote individual cells, and
+#               columns hold cluster annotation with different k levels
+set.seed(211)
+create.clustering.object = function(celldata, COInames, Klist) {
+  clustering = data.frame("index" = 1:nrow(celldata))
+  for (k in Klist) {
+    print(Sys.time())
+    print(paste0("Current k: ", k))
+    # Run Rphenograph on data of select columns
+    Rphenograph_out <- Rphenograph(celldata[COI_names], k=k)
+    
+    # Create a dataframe with the annotation for each cell and sort by index
+    annotation = as.vector(membership(Rphenograph_out[[2]]))
+    index = as.numeric(names(membership(Rphenograph_out[[2]])))
+    clusterDF = data.frame(index, annotation)[order(index),]
+    
+    # Find the indexes of cells that were not clustered
+    allCellIndex = as.numeric(1:nrow(celldata))
+    missing = allCellIndex[!allCellIndex %in% clusterDF$index]
+    
+    # Set the cluster for all unclustered cells to NA:
+    if (length(missing) > 0) {
+      unassignedCluster = NA
+      
+      for (n in missing) {
+        clusterDF = rbind(clusterDF[1:(n-1),],
+                          c(n, unassignedCluster),
+                          clusterDF[n:nrow(clusterDF),])
+      }
+    }
+    
+    # Add clustering to the celldata dataframe
+    if (isTRUE(all.equal(clustering$index, clusterDF$index))){
+      colnames = c(colnames(clustering), paste0("k", k))
+      clustering = cbind(clustering, as.numeric(clusterDF$annotation))
+      colnames(clustering) = colnames
+    } else {
+      stop("Indexes do not correspond")
+    }
+  }
+  
+  clustering = subset(clustering, select = -c(index))
+  return(clustering)
+}
+
+clusteringObject = create.clustering.object(celldata, COI_names, kList)
+
+# Save data with clustering information added
+date = str_sub(gsub("-", "", Sys.Date()), -6, -1)
+file_path = paste0(OUTPUT_PATH, "/", date, "_clustering_k",
+                   paste(kList, collapse = "_k"),
+                   "_", length(COI_names), "markers.csv")
+
+write.csv(clusteringObject, file = file_path, row.names = F)
+print(paste("File saved at:", file_path))
+print(Sys.time())
+```
+
+
