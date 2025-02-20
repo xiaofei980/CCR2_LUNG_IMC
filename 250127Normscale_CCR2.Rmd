@@ -51,7 +51,7 @@ In this section, we set the parameters to correctly configure this script:
 # Obtain a list of paths to the datafiles
 BASE = "/mnt/Data1/groupfebe/runs/Xiaofei/CCR2_LUNG/"
 experiment_path = file.path(BASE, "Data/Normalization_input/AllCellsMask")
-OUTPUT_PATH = file.path(BASE, "Results/Normalscale_output")
+OUTPUT_PATH = file.path(BASE, "Results/Normalization_output")
 csvfileNames = file.path(experiment_path, list.files(experiment_path))
 # Save datafiles automatically?
 saveCSV = T
@@ -59,16 +59,16 @@ saveCSV = T
 # List of markers to be used for plotting
 
 # Define MARKERS vector
-MARKERS <- gsub("MI_", "", unique(colnames(celldatatemp)))
-MARKERS <- unlist(strsplit(MARKERS, ","))
-MARKERS_STRING <- paste0("MARKERS = c(", paste0('"', MARKERS, '"', collapse = ","), ")")
-
-# Print the formatted string
-cat(MARKERS_STRING)
-MARKERS < MARKERS_STRING
+# MARKERS <- gsub("MI_", "", unique(colnames(celldatatemp)))
+# MARKERS <- unlist(strsplit(MARKERS, ","))
+# MARKERS_STRING <- paste0("MARKERS = c(", paste0('"', MARKERS, '"', collapse = ","), ")")
+# 
+# # Print the formatted string
+# cat(MARKERS_STRING)
+# MARKERS < MARKERS_STRING
 # List of markers to be used for plotting
 
-# MARKERS = c("Argon80","B220","CD103","CD11b","CD11c","CD206","CD3e","CD44","CD45","CD4","CD68","CD86","CD8a","CK19","CXCL9","Casp3","DNA1","DNA2","EpCAM","F480","Foxp3","Ki67","LAG3","LY6G","Ly6C","MGL2","MHCII","NK1_1","PD1","PDL1","PDPN","PECAM","PVR","Sirpa","TCRgdt","TIM3","Thy1_2","Vimentin","Xenon131","Xenon132","aSMA","pS6")
+ MARKERS = c("Argon80","B220","CD103","CD11b","CD11c","CD206","CD3e","CD44","CD45","CD4","CD68","CD86","CD8a","CK19","CXCL9","Casp3","DNA1","DNA2","EpCAM","F480","Foxp3","Ki67","LAG3","LY6G","Ly6C","MGL2","MHCII","NK1_1","PD1","PDL1","PDPN","PECAM","PVR","Sirpa","TCRgdt","TIM3","Thy1_2","Vimentin","Xenon131","Xenon132","aSMA","pS6")
 
 
 # Threshold for scaling
@@ -193,7 +193,7 @@ normalisation.
 #in this step ,imagemeatada come from fullstack ometiff
 print(Sys.time())
 print("Normalising data...")
-imagedata =read.csv(file.path(base, "Data/Normalization_input/imagemetadata.csv"),
+imagedata =read.csv(file.path(BASE, "Data/Normalization_input/imagemetadata.csv"),
    stringsAsFactors = F)
 
 
