@@ -27,7 +27,7 @@ INPUT_PATH = file.path(BASE, "Data/Cellperc_input")
 OUTPUT_PATH = file.path(BASE, "Results/Cellperc_output/")
 
 # Load celldata excluding tSNE coordinates  /load sampled celldata with tSNE coordinates. 
-celldata = read.csv(paste0(INPUT_PATH, "/250116_celldata.csv"))
+celldata = read.csv(paste0(INPUT_PATH, "/250127_celldata.csv"))
 unique(celldata$annotation)
 unique(celldata$ExpGroup)
 ```
@@ -194,7 +194,7 @@ plot.celltypeperc3(celldata = celldata_macrophages,title = "Stacked_macrophages_
 #250116  just copy ,haven't check yet. 
 celldata$LAG3exp <- ifelse(celldata$MI_LAG3 > 1, "LAG3+", "LAG3-") # alittle bit more, difficult, some signal seems come from Ki67, but keep the Lag3 signal which coexpress with T cell
 celldata$Ki67exp <- ifelse(celldata$MI_Ki67 >= 0.2, "Ki67+", "Ki67-") #find a balance
-celldata$casp3exp <-ifelse(celldata$MI_casp3>=0.7,"casp3+","casp3-")
+celldata$Casp3exp <-ifelse(celldata$MI_Casp3>=0.7,"Casp3+","Casp3-")
 celldata$PDL1exp <- ifelse(celldata$MI_PDL1 >= 0.3, "PDL1+", "PDL1-")
 celldata$pS6exp <- ifelse(celldata$MI_pS6 >= 0.3, "pS6+", "pS6-") 
 celldata$MHCIIexp <- ifelse(celldata$MI_MHCII >= 0.25, "MHCII+", "MHCII-") 
@@ -203,9 +203,9 @@ celldata$CD86exp <- ifelse(celldata$MI_CD86 >= 0.8, "CD86+", "CD86-") #ste a lit
 celldata$CD206exp <- ifelse(celldata$MI_CD206>= 0.2, "CD206+", "CD206-") 
 celldata$PVRexp <- ifelse(celldata$MI_PVR >= 0.3, "PVR+", "PVR-") 
 celldata$TIM3exp <- ifelse(celldata$MI_TIM3 >= 0.8, "TIM3+", "TIM3-") 
-
+celldata$Thy1exp<- ifelse(celldata$MI_Thy1_2 >= 0.2, "Thy1+", "Thy1-") 
+celldata$CXCL9exp<- ifelse(celldata$MI_CXCL9 >= 0.25, "CXCL9+", "CXCL9-") 
 ```
-
 
 
 # plot dots on all original image or on specific image for checking the cutoff
@@ -216,7 +216,7 @@ celldata$TIM3exp <- ifelse(celldata$MI_TIM3 >= 0.8, "TIM3+", "TIM3-")
 #plot.scatter(celldata, cluster = "kinv40", clusterN = c(16), Xmarker = "EpCAM", Ymarker = "aSMA",dim=1)
 ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
   geom_point(data=celldata,size = 0.01, color = "black") +
-  geom_point(data = celldata[which(celldata$MI_TIM3>=0.8),], size = 0.01, colour = "yellow") +
+  geom_point(data = celldata[which(celldata$MI_CXCL9>=0.25),], size = 0.01, colour = "yellow") +
   theme_classic() +
   theme(axis.line=element_blank(),
         axis.text.x=element_blank(),
@@ -239,14 +239,14 @@ ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
 ##plot dots on one specific original image
 ```{r}
 #lag3 0.5PVR 0.25 almost all 0.3 clealy less MHCII   0.25 PDL1  0.15 CD24  0.2 PS6 0.2  Casp 0.3 colleagen
-ROI13<-subset(celldata, ROI_ID == "06_WT") #   [1] "01_CCR2KO" "02_CCR2KO" "03_CCR2KO" "04_CCR2KO" "05_CCR2KO" "06_WT"     "07_WT"     "08_WT"     "09_WT"    "10_WT"     "11_WT"  
+ROI13<-subset(celldata, ROI_ID == "11_WT") #   [1] "01_CCR2KO" "02_CCR2KO" "03_CCR2KO" "04_CCR2KO" "05_CCR2KO" "06_WT"     "07_WT"     "08_WT"     "09_WT"    "10_WT"     "11_WT"  
 ggplot(ROI13, aes(x= Location_Center_X, y = -Location_Center_Y)) +
   #ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
   geom_point(size = 0.5, color = "black") +
     #geom_point(data = ROI13[which(ROI13$annotation=="B cells"),], size = 0.1, colour = "red")+
   #geom_point(data = ROI13[which(ROI13$annotation=="B cells"&ROI13$MI_CollagenI>0.5),], size = 0.1, colour = "yellow")+
    
-  geom_point(data = ROI13[which(ROI13$MI_TIM3>=0.8),], size = 0.5, colour = "red")+
+  geom_point(data = ROI13[which(ROI13$MI_CXCL9>=0.2),], size = 0.5, colour = "red")+
 # geom_point(data = ROI13[which(ROI13$MI_F480>=1.5),], size = 1, colour = "green")+
 #   geom_point(data = ROI13[which(ROI13$MI_EpCAM>=2),], size = 1, colour = "blue")+
 #    geom_point(data = ROI13[which(ROI13$MI_Vimentin>=2),], size = 1, colour = "pink")+
@@ -272,241 +272,182 @@ ggplot(ROI13, aes(x= Location_Center_X, y = -Location_Center_Y)) +
 ```
 
 
-
-
-
-
-
-
-
 # Calculate the percentage of cell types 
 ```{r}
-## un calssifie Trge
-## need check with image , havent check 
-celldata$LAG3exp <- ifelse(celldata$MI_LAG3 >= 0.5, "LAG3+", "LAG3-") 
-celldata$Ki67exp <- ifelse(celldata$MI_Ki67 >= 0.5, "Ki67+", "Ki67-") 
-celldata$casp3exp <-ifelse(celldata$MI_casp3>=0.3,"casp3+","casp3-")
-celldata$PDL1exp <- ifelse(celldata$MI_PDL1 >= 0.15, "PDL1+", "PDL1-")
-celldata$CD24exp <- ifelse(celldata$MI_CD24 >= 0.2, "CD24+", "CD24-")
-celldata$pS6exp <- ifelse(celldata$MI_pS6 >= 0.2, "pS6+", "pS6-") 
-celldata$MHCIIexp <- ifelse(celldata$MI_MHCcII >= 0.25, "MHCII+", "MHCII-") 
-celldata$PD1exp <- ifelse(celldata$MI_PD1 >= 0.3, "PD1+", "PD1-") 
-celldata$Ki67exp <- ifelse(celldata$MI_Ki67 >= 0.5, "Ki67+", "Ki67-") 
-celldata$CD86exp <- ifelse(celldata$MI_CD86 >= 0.5, "CD86+", "CD86-") 
-celldata$CD80exp <- ifelse(celldata$MI_CD80 >= 0.5, "CD80+", "CD80-") 
-celldata$CD206exp <- ifelse(celldata$MI_CD206 >= 0.5, "CD206+", "CD206-") 
-celldata$PVRexp <- ifelse(celldata$MI_PVR >= 0.25, "PVR+", "PVR-") 
-celldata$TIM3exp <- ifelse(celldata$MI_TIM3 >= 0.3, "TIM3+", "TIM3-") 
-
 str(celldata)
 celldata$ExpGroup <- as.factor(celldata$ExpGroup)
 celldata$ROI_ID <- as.factor(celldata$ROI_ID)
-str(celldata)
-# Remove the unnamed column
-celldata <- celldata[, !colnames(celldata) == "X"]
-# Verify the column removal
-colnames(celldata)
-stat_241212_ROI = celldata %>%
+# str(celldata)
+# # Remove the unnamed column
+# celldata <- celldata[, !colnames(celldata) == "X"]
+# # Verify the column removal
+# colnames(celldata)
+
+###################################################
+# what is include here:
+##1 all cell number   2. T ,Mac ,Mon, Neu cells in immune cells  3.CD4,8 Treg percentage in T cell population. 
+#activation marker and exaustion marker. 
+stat_250117_domain = celldata %>%
  # group_by(ExpGroup,ROI_ID,MouseID) %>%
-  group_by(ExpGroup,MouseID,ROI_ID) %>%
+  group_by(ExpGroup,domain,ROI_ID) %>%
     dplyr::summarise(
     totaln = n(),
     Tumourn = sum(annotation=="Tumour"),
-    EPTumourn = sum(kinv25%in% c("20","26","27","28")),
-    Tcelln = sum(annotation %in% c("T cell CD4","T cell CD8","Tregs","TCRgdt")),
+    Tcelln = sum(annotation %in% c("T cell CD4","T cell CD8","Tregs")),
     CD4n = sum(annotation=="T cell CD4"),
     CD8n = sum(annotation=="T cell CD8"),
     Tregn= sum(annotation=="Tregs"),
-    TCRgdtn=sum(annotation=="TCRgdt"),
     Bcelln= sum(annotation=='B cells'),
     Neutn = sum(annotation=="Neutrophils"),
     Maccelln = sum(annotation =="Macrophages"),
+    Monon=sum(annotation=='Monocytes'),
     Fibn = sum(annotation=="Fibroblasts"),
     Endon=sum(annotation=="Endothelium"),
-    DCcelln = sum(annotation %in% c("Dendritic cells CD103","Dendritic cells")),#DCcelln means all DCs 
-    DCothern = sum(annotation=="Dendritic cells"), #DCn means DC others, here is a little bit confused, maybe change later, now to fit previous figure, 
-    cDC1n = sum(annotation=="Dendritic cells CD103"),
-    immunecellsn = sum(annotation %in% c("T cell CD4","T cell CD8","Dendritic cells","Tregs",'TCRgdt',"Neutrophils","Macrophages","B cells","Dendritic cells CD103")),
-    # T cell surface marker : PD1  TIM3  LAG3 Ki67 
-    PD1Tcelln = sum(PD1exp=="PD1+" & annotation %in% c("T cell CD4","T cell CD8","Tregs","TCRgdt")),
-    PD1CD4Tcelln = sum(PD1exp=="PD1+" & annotation=="T cell CD4"),
-    PD1CD8Tcelln = sum(PD1exp=="PD1+" & annotation=="T cell CD8"),
-    PD1Tregn = sum(PD1exp=="PD1+" & annotation=="Tregs"),
-    PD1Bcelln= sum(PD1exp=="PD1+" & annotation=="B cells"),
-    
-   
-    LAG3Tcelln = sum(LAG3exp=="LAG3+" & annotation %in% c("T cell CD4","T cell CD8","Tregs","TCRgdt")),
-    LAG3CD4Tcelln = sum(LAG3exp=="LAG3+" & annotation=="T cell CD4"),
-    LAG3CD8Tcelln = sum(LAG3exp=="LAG3+" & annotation=="T cell CD8"),
-    LAG3Tregn = sum(LAG3exp=="LAG3+" & annotation=="Tregs"),
-    LAG3Bcelln= sum(LAG3exp=="LAG3+" & annotation=="B cells"),
-    
-    TIM3Tcelln = sum(TIM3exp=="TIM3+" & annotation %in% c("T cell CD4","T cell CD8","Tregs","TCRgdt")),
-    TIM3CD4Tcelln = sum(TIM3exp=="TIM3+" & annotation=="T cell CD4"),
-    TIM3CD8Tcelln = sum(TIM3exp=="TIM3+" & annotation=="T cell CD8"),
-    TIM3Tregn = sum(TIM3exp=="TIM3+" & annotation=="Tregs"),
-    TIM3Bcelln= sum(TIM3exp=="TIM3+" & annotation=="B cells"),
-    
-    Ki67Tcelln = sum(Ki67exp=="Ki67+" & annotation %in% c("T cell CD4","T cell CD8","Tregs","TCRgdt")),
-    Ki67CD4Tcelln = sum(Ki67exp=="Ki67+" & annotation=="T cell CD4"),
-    Ki67CD8Tcelln = sum(Ki67exp=="Ki67+" & annotation=="T cell CD8"),
-    Ki67Tregn = sum(Ki67exp=="Ki67+" & annotation=="Tregs"),
-    Ki67Bcelln= sum(Ki67exp=="Ki67+" & annotation=="B cells"),
-    
-    Ki67Endon= sum(Ki67exp=="Ki67+" & annotation=="Endothelium"),
-    # CD80 CD86 on Neutrophils , PD1 PDL1 TIM3 LAG3 Ki67 MHCII
-     
-    #MHCII, CD86, CD80  PD1 PDL1 MHCII PVR on myeloid cells
-    CD86Maccelln = sum(CD86exp=="CD86+" & annotation=="Macrophages"),
-    CD206Maccelln = sum(CD206exp=="CD206+" & annotation=="Macrophages"),
-    CD86DCcelln = sum(CD86exp=="CD86+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    CD86DCothern = sum(CD86exp=="CD86+" & annotation=="Dendritic cells"),
-    CD86cDC1n = sum(CD86exp=="CD86+" & annotation=="Dendritic cells CD103"),
-    
-    CD80Maccelln = sum(CD80exp=="CD80+" & annotation=="Macrophages"),
-    CD80DCcelln = sum(CD80exp=="CD80+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    CD80DCothern = sum(CD80exp=="CD80+" & annotation=="Dendritic cells"),
-    CD80cDC1n = sum(CD80exp=="CD80+" & annotation=="Dendritic cells CD103"),
-    
-    pS6Maccelln = sum(pS6exp=="pS6+" & annotation=="Macrophages"),
-    pS6DCcelln = sum(pS6exp=="pS6+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    pS6DCothern = sum(pS6exp=="pS6+" & annotation=="Dendritic cells"),
-    pS6cDC1n = sum(pS6exp=="pS6+" & annotation=="Dendritic cells CD103"),
-    
-    
-    MHCIIMaccelln = sum(MHCIIexp=="MHCII+" & annotation=="Macrophages"),
-
-    MHCIIDCcelln = sum(MHCIIexp=="MHCII+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    MHCIIDCothern = sum(MHCIIexp=="MHCII+" & annotation=="Dendritic cells"),
-    MHCIIcDC1n = sum(MHCIIexp=="MHCII+" & annotation=="Dendritic cells CD103"),
-   
-    PDL1Maccelln = sum(PDL1exp=="PDL1+" & annotation=="Macrophages"),
-    PDL1DCcelln = sum(PDL1exp=="PDL1+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    PDL1DCothern = sum(PDL1exp=="PDL1+" & annotation=="Dendritic cells"),
-    PDL1cDC1n = sum(PDL1exp=="PDL1+" & annotation=="Dendritic cells CD103"),
-    
-    PVRMaccelln = sum(PVRexp=="PVR+" & annotation=="Macrophages"),
-    PVRDCcelln = sum(PVRexp=="PVR+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    PVRDCothern = sum(PVRexp=="PVR+" & annotation=="Dendritic cells"),
-    PVRcDC1n = sum(PVRexp=="PVR+" & annotation=="Dendritic cells CD103"),
-    
-
-    # PDL1  casp3  Ki67  PVR  pS6 on tumour 
-    
-    Casp3Tumourn = sum(casp3exp=="casp3+" & annotation=="Tumour"),
-    Ki67Tumourn = sum(Ki67exp=="Ki67+" & annotation=="Tumour"),
-    PVRTumourn = sum(PVRexp=="PVR+" & annotation=="Tumour"),
-    pS6Tumourn = sum(pS6exp=="pS6+" & annotation=="Tumour"),
-    PDL1Tumourn = sum(PDL1exp=="PDL1+" & annotation=="Tumour"),
-    CD24Tumourn = sum(CD24exp=="CD24+" & annotation=="Tumour"),
-    
-    Casp3EPTumourn = sum(casp3exp=="casp3+" & kinv25%in% c("20","26","27","28")),
-    Ki67EPTumourn = sum(Ki67exp=="Ki67+" & kinv25%in% c("20","26","27","28")),
-    PVREPTumourn = sum(PVRexp=="PVR+" & kinv25%in% c("20","26","27","28")),
-    pS6EPTumourn = sum(pS6exp=="pS6+" & kinv25%in% c("20","26","27","28")),
-    PDL1EPTumourn = sum(PDL1exp=="PDL1+" & kinv25%in% c("20","26","27","28")),
-    CD24EPTumourn = sum(CD24exp=="CD24+" & kinv25%in% c("20","26","27","28")),
-    
-    
-    
-    # PD1 , CD80 ,CD86 on Neutrophils 
-    PD1Neutn =sum(PD1exp=="PD1+"& annotation=="Neutrophils"),
-    pS6Neutn =sum(pS6exp=="pS6+"& annotation=="Neutrophils"),
-    PDL1Neutn =sum(PDL1exp=="PDL1+"& annotation=="Neutrophils"),
-    CD80Neutn =sum(CD80exp=="CD80+"& annotation=="Neutrophils"),
+    Epin=sum(annotation=="Epithelium"),
+    cDC1n = sum(annotation %in% c("Dendritic cells CD103")),
+    immunecellsn = sum(annotation %in% c("T cell CD4","T cell CD8","Tregs","Neutrophils","Macrophages","B cells","Dendritic cells CD103",'Monocytes')),
+    # 
+    # # T cell surface marker : PD1  TIM3  LAG3 Ki67 
+    # PD1Tcelln = sum(PD1exp=="PD1+" & annotation %in% c("T cell CD4","T cell CD8","Tregs")),
+    # PD1CD4Tcelln = sum(PD1exp=="PD1+" & annotation=="T cell CD4"),
+    # PD1CD8Tcelln = sum(PD1exp=="PD1+" & annotation=="T cell CD8"),
+    # PD1Tregn = sum(PD1exp=="PD1+" & annotation=="Tregs"),
+    # PD1Neutn = sum(PD1exp=="PD1+" & annotation=="Neutrophils"),
+    #  PD1Monon = sum(PD1exp=="PD1+" & annotation=="Monocytes"),
+    # 
+    # LAG3Tcelln = sum(LAG3exp=="LAG3+" & annotation %in% c("T cell CD4","T cell CD8","Tregs")),
+    # LAG3CD4Tcelln = sum(LAG3exp=="LAG3+" & annotation=="T cell CD4"),
+    # LAG3CD8Tcelln = sum(LAG3exp=="LAG3+" & annotation=="T cell CD8"),
+    # LAG3Tregn = sum(LAG3exp=="LAG3+" & annotation=="Tregs"),
+    # 
+    # 
+    # TIM3Tcelln = sum(TIM3exp=="TIM3+" & annotation %in% c("T cell CD4","T cell CD8","Tregs")),
+    # TIM3CD4Tcelln = sum(TIM3exp=="TIM3+" & annotation=="T cell CD4"),
+    # TIM3CD8Tcelln = sum(TIM3exp=="TIM3+" & annotation=="T cell CD8"),
+    # TIM3Tregn = sum(TIM3exp=="TIM3+" & annotation=="Tregs"),
+    # 
+    # 
+    # Ki67Tcelln = sum(Ki67exp=="Ki67+" & annotation %in% c("T cell CD4","T cell CD8","Tregs")),
+    # Ki67CD4Tcelln = sum(Ki67exp=="Ki67+" & annotation=="T cell CD4"),
+    # Ki67CD8Tcelln = sum(Ki67exp=="Ki67+" & annotation=="T cell CD8"),
+    # Ki67Tregn = sum(Ki67exp=="Ki67+" & annotation=="Tregs"),
+    # Ki67Endon= sum(Ki67exp=="Ki67+" & annotation=="Endothelium"),
+    # # CD80 CD86 on Neutrophils , PD1 PDL1 TIM3 LAG3 Ki67 MHCII
+    #  
+    # #MHCII, CD86, CD80  PD1 PDL1 MHCII PVR on myeloid cells
+    # CD86Maccelln = sum(CD86exp=="CD86+" & annotation=="Macrophages"),
+    # CD206Maccelln = sum(CD206exp=="CD206+" & annotation=="Macrophages"),
+    # CD86cDC1n = sum(CD86exp=="CD86+" & annotation=="Dendritic cells CD103"),
+    # CD86Monon = sum(CD86exp=="CD86+" & annotation=="Monocytes"),
+    # CD86Neutn = sum(CD86exp=="CD86+" & annotation=="Neutrophils"),
+    # 
+    # 
+    # pS6Maccelln = sum(pS6exp=="pS6+" & annotation=="Macrophages"),
+    #  pS6Monon = sum(pS6exp=="pS6+" & annotation=="Monocytes"),
+    # pS6cDC1n = sum(pS6exp=="pS6+" & annotation=="Dendritic cells CD103"),
+    # 
+    # 
+    # MHCIIMaccelln = sum(MHCIIexp=="MHCII+" & annotation=="Macrophages"),
+    # MHCIIcDC1n = sum(MHCIIexp=="MHCII+" & annotation=="Dendritic cells CD103"),
+    # 
+    # PDL1Maccelln = sum(PDL1exp=="PDL1+" & annotation=="Macrophages"),
+    # PDL1Neutn = sum(PDL1exp=="PDL1+" & annotation=="Neutrophils"),
+    # PDL1cDC1n = sum(PDL1exp=="PDL1+" & annotation=="Dendritic cells CD103"),
+    # PDL1Monon = sum(PDL1exp=="PDL1+" & annotation=="Monocytes"),
+    # 
+    # PVRMaccelln = sum(PVRexp=="PVR+" & annotation=="Macrophages"),
+    #  PVRMonon = sum(PVRexp=="PVR+" & annotation=="Monocytes"),
+    # PVRcDC1n = sum(PVRexp=="PVR+" & annotation=="Dendritic cells CD103"),
+    # 
+    # # PDL1  casp3  Ki67  PVR  pS6 on tumour 
+    # 
+    # Casp3Tumourn = sum(Casp3exp=="Casp3+" & annotation=="Tumour"),
+    # Ki67Tumourn = sum(Ki67exp=="Ki67+" & annotation=="Tumour"),
+    # PVRTumourn = sum(PVRexp=="PVR+" & annotation=="Tumour"),
+    # pS6Tumourn = sum(pS6exp=="pS6+" & annotation=="Tumour"),
+    # PDL1Tumourn = sum(PDL1exp=="PDL1+" & annotation=="Tumour"),
+    # 
+    # # PD1 , CD80 ,CD86 on Neutrophils 
+    # PD1Neutn =sum(PD1exp=="PD1+"& annotation=="Neutrophils"),
+    # PDL1Neutn =sum(PDL1exp=="PDL1+"& annotation=="Neutrophils"),
     CD86Neutn =sum(CD86exp=="CD86+"& annotation=="Neutrophils")
-    # CollagenI ,Vimentin  on Fibroblasts ?
 
     )%>%
  # group_by(MouseID, ROI_ID, ExpGroup) %>%
-  group_by(ExpGroup,MouseID,ROI_ID) %>%
+  group_by(ExpGroup,domain,ROI_ID) %>%
   mutate(          
          Tcelln_immunecellsn = Tcelln/immunecellsn,
          Bcelln_immunecells = Bcelln/immunecellsn,
          Neutn_immunecells = Neutn/immunecellsn,
          Maccelln_immunecells= Maccelln/immunecellsn, 
-         DCcelln_immunecells= DCcelln/immunecellsn,
-         Fibn_immunecells = Fibn/immunecellsn,
+         cDC1n_immunecells= cDC1n/immunecellsn,
+         Monon_immunecells= Monon/immunecellsn, 
+         Fibn_totaln =Fibn/totaln,
 
                     # Each sub cell type %  in each cell type 
                     CD4n_Tcelln = CD4n/Tcelln,
                     CD8n_Tcelln = CD8n/Tcelln,
                     Tregn_Tcelln = Tregn/Tcelln,
-                    TCRgdtn_Tcelln = TCRgdtn/Tcelln,
                     CD4n_immunecellsn = CD4n/immunecellsn,
                     CD8n_immunecellsn = CD8n/immunecellsn,
                     Tregn_immunecellsn = Tregn/immunecellsn,
-         
+              
+                
                    
-                    DCothern_DCcelln = DCothern/DCcelln,
-                    cDC1n_DCcelln = cDC1n/DCcelln,
-         
-                    Maccelln_immunecellsn = Maccelln/immunecellsn,
-                    DCothern_immunecellsn = DCothern/immunecellsn,
                     cDC1n_immunecellsn = cDC1n/immunecellsn,
+                    Maccelln_immunecellsn = Maccelln/immunecellsn,
                     
                     # Marker expression relative to cell type
-                    PD1Tcelln_Tcelln = PD1Tcelln/Tcelln,
-                    PD1CD8Tcelln_CD8n =  PD1CD8Tcelln/CD8n,
-                    PD1CD4Tcelln_CD4n = PD1CD4Tcelln/CD4n,
-                    PD1Tregn_Tregn = PD1Tregn/Tregn,
-                 
-                    pS6DCothern_DCothern = pS6DCothern/DCothern,
-                    CD86DCothern_DCothern = CD86DCothern/DCothern,
-                    CD80DCothern_DCothern = CD80DCothern/DCothern,
-                    MHCIIDCothern_DCothern = MHCIIDCothern/DCothern,
-                    PDL1DCothern_DCothern = PDL1DCothern/DCothern,
-                    PVRDCothern_DCothern = PVRDCothern/DCothern,
-
-                    CD86DCcelln_DCcelln = CD86DCcelln/DCcelln,
-                    CD80DCcelln_DCcelln = CD80DCcelln/DCcelln,
-                    MHCIIDCcelln_DCcelln = MHCIIDCcelln/DCcelln,
-                    PDL1DCcelln_DCcelln = PDL1DCcelln/DCcelln,
-                    PVRDCcelln_DCcelln = PVRDCcelln/DCcelln,
-                    pS6DCcelln_DCcelln = pS6DCcelln/DCcelln,
-         
-                    CD86cDC1n_cDC1n = CD86cDC1n/cDC1n,
-                    CD80cDC1n_cDC1n = CD80cDC1n/cDC1n,
-                    MHCIIcDC1n_cDC1n = MHCIIcDC1n/cDC1n,
-                    PDL1cDC1n_cDC1n = PDL1cDC1n/cDC1n,
-                    PVRcDC1n_cDC1n = PVRcDC1n/cDC1n,
-                    pS6cDC1n_cDC1n = pS6cDC1n/cDC1n,
-         
-                    MHCIIMaccelln_Maccelln =MHCIIMaccelln/Maccelln,       
-                    CD86Maccelln_Maccelln =CD86Maccelln/Maccelln,    
-                    CD206Maccelln_Maccelln =CD206Maccelln/Maccelln,    
-                    CD80Maccelln_Maccelln =CD80Maccelln/Maccelln,            
-                    PDL1Maccelln_Maccelln = PDL1Maccelln/Maccelln,            
-                    PVRMaccelln_Maccelln =PVRMaccelln/Maccelln,  
-                    pS6Maccelln_Maccelln =pS6Maccelln/Maccelln,    
-                    
-         
-                    EPTumourn_Tumourn = EPTumourn/Tumourn,
-                    Casp3Tumourn_Tumourn = Casp3Tumourn/Tumourn,
-                    Ki67Tumourn_Tumourn =  Ki67Tumourn/Tumourn,
-                    PDL1Tumourn_Tumourn = PDL1Tumourn/Tumourn,
-                    PVRTumourn_Tumourn =  PVRTumourn/Tumourn,
-                    pS6Tumourn_Tumourn =  pS6Tumourn/Tumourn,
-                    Casp3EPTumourn_EPTumourn = Casp3EPTumourn/EPTumourn,
-                    Ki67EPTumourn_EPTumourn =  Ki67EPTumourn/EPTumourn,
-                    PDL1EPTumourn_EPTumourn = PDL1EPTumourn/EPTumourn,
-                    PVREPTumourn_EPTumourn =  PVREPTumourn/EPTumourn,
-                    pS6EPTumourn_EPTumourn =  pS6EPTumourn/EPTumourn,
-               
-                    Fibn_totaln =Fibn/totaln,
-                    PD1Neutn_Neutn =PD1Neutn/Neutn,
-                    PDL1Neutn_Neutn =PDL1Neutn/Neutn,
-                    CD80Neutn_Neutn =CD80Neutn/Neutn,
-                    CD86Neutn_Neutn =CD86Neutn/Neutn,
-                    pS6Neutn_Neutn =pS6Neutn/Neutn
+                    # PD1Tcelln_Tcelln = PD1Tcelln/Tcelln,
+                    # PD1CD8Tcelln_CD8n =  PD1CD8Tcelln/CD8n,
+                    # PD1CD4Tcelln_CD4n = PD1CD4Tcelln/CD4n,
+                    # PD1Tregn_Tregn = PD1Tregn/Tregn,
+                    # 
+                    # CD86cDC1n_cDC1n = CD86cDC1n/cDC1n,
+                    # MHCIIcDC1n_cDC1n = MHCIIcDC1n/cDC1n,
+                    # PDL1cDC1n_cDC1n = PDL1cDC1n/cDC1n,
+                    # PVRcDC1n_cDC1n = PVRcDC1n/cDC1n,
+                    # pS6cDC1n_cDC1n = pS6cDC1n/cDC1n,
+                    # 
+                    # MHCIIMaccelln_Maccelln =MHCIIMaccelln/Maccelln,       
+                    # CD86Maccelln_Maccelln =CD86Maccelln/Maccelln,    
+                    # CD206Maccelln_Maccelln =CD206Maccelln/Maccelln,    
+                    #     
+                    # PDL1Maccelln_Maccelln = PDL1Maccelln/Maccelln,            
+                    # PVRMaccelln_Maccelln =PVRMaccelln/Maccelln,  
+                    # pS6Maccelln_Maccelln =pS6Maccelln/Maccelln,    
+                    # 
+                    # 
+                    # Casp3Tumourn_Tumourn = Casp3Tumourn/Tumourn,
+                    # Ki67Tumourn_Tumourn =  Ki67Tumourn/Tumourn,
+                    # PDL1Tumourn_Tumourn = PDL1Tumourn/Tumourn,
+                    # PVRTumourn_Tumourn =  PVRTumourn/Tumourn,
+                    # pS6Tumourn_Tumourn =  pS6Tumourn/Tumourn,
+                    # 
+                    # 
+                    # PD1Neutn_Neutn =PD1Neutn/Neutn,
+                    # PDL1Neutn_Neutn =PDL1Neutn/Neutn,
+                    # CD86Neutn_Neutn =CD86Neutn/Neutn,
+                    # 
+                    # 
+                    # PD1Monon_Monon =PD1Monocelln/Monocelln,
+                    # PDL1Monocelln_Monocelln =PDL1Monocelln/Monocelln,
+                    # CD86Monocelln_Monocelln =CD86Monocelln/Monocelln,
+                    # pS6Monocelln_Monocelln =pS6Monocelln/Monocelln,
+                    # 
          
                            ) %>%
   ungroup()
+```
+
+
+```{r}
 plot.boxplot = function(celldata, factor, comparisons) {
   factor = ensym(factor)
   ggplot(celldata, aes(x = ExpGroup, y = !!factor, colour = ExpGroup)) +
-    geom_boxplot() + geom_dotplot(aes(fill = MouseID),method = "histodot", binaxis='y',
+    geom_boxplot() + geom_dotplot(aes(fill = domain),method = "histodot", binaxis='y',
                                   stackdir='center', dotsize = 0.8) +
+     geom_text(aes(label = ROI_ID), position = position_jitter(width = 0.2, height = 0), size = 3, hjust = -0.2) + # 添加标签
      #scale_y_log10() +
      scale_y_continuous(labels = scales::percent) +
     scale_x_discrete(limits=c("WT", "CCR2KO")) +
@@ -531,71 +472,55 @@ my_comparisons=list(c("WT","CCR2KO"))
      
 
 
-
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1Maccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRMaccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Casp3Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Ki67Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRTumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Casp3Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Ki67Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRTumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "EPTumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Casp3EPTumourn_EPTumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Ki67EPTumourn_EPTumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1EPTumourn_EPTumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVREPTumourn_EPTumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6EPTumourn_EPTumourn",comparisons = my_comparisons)
-
-plot.boxplot(celldata = stat_241212_ROI, factor = "Tcelln_immunecellsn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Bcelln_immunecells",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Neutn_immunecells",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Maccelln_immunecells",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "DCcelln_immunecells",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD4n_Tcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD8n_Tcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Tregn_Tcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "TCRgdtn_Tcelln",comparisons = my_comparisons)
-
-plot.boxplot(celldata = stat_241212_ROI, factor = "DCothern_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "cDC1n_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PD1Tcelln_Tcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PD1CD8Tcelln_CD8n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PD1CD4Tcelln_CD4n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PD1Tregn_Tregn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1Neutn_Neutn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD80Neutn_Neutn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6Neutn_Neutn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD86Neutn_Neutn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PD1Neutn_Neutn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD86DCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6DCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD80DCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "MHCIIDCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1DCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRDCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD86DCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6DCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD80DCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "MHCIIDCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1DCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRDCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD86cDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6cDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD80cDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "MHCIIcDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1cDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRcDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "MHCIIMaccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD86Maccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6Maccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD80Maccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Fibn_totaln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PDL1Maccelln_Maccelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PVRMaccelln_Maccelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "Casp3Tumourn_Tumourn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "Ki67Tumourn_Tumourn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PDL1Tumourn_Tumourn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PVRTumourn_Tumourn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "Casp3Tumourn_Tumourn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "Ki67Tumourn_Tumourn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PDL1Tumourn_Tumourn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PVRTumourn_Tumourn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "pS6Tumourn_Tumourn",comparisons = my_comparisons)
 
 
+
+plot.boxplot(celldata = stat_250117_ROI, factor = "Tcelln_immunecellsn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "Bcelln_immunecells",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "Neutn_immunecells",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "Maccelln_immunecells",comparisons = my_comparisons)
+
+plot.boxplot(celldata = stat_250117_ROI, factor = "Fibn_totaln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "CD4n_Tcelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "CD8n_Tcelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "Tregn_Tcelln",comparisons = my_comparisons)
+
+
+
+plot.boxplot(celldata = stat_250117_ROI, factor = "PD1Tcelln_Tcelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PD1CD8Tcelln_CD8n",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PD1CD4Tcelln_CD4n",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PD1Tregn_Tregn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PDL1Neutn_Neutn",comparisons = my_comparisons)
+
+
+plot.boxplot(celldata = stat_250117_ROI, factor = "CD86Neutn_Neutn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PD1Neutn_Neutn",comparisons = my_comparisons)
+
+
+
+plot.boxplot(celldata = stat_250117_ROI, factor = "CD86cDC1n_cDC1n",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "pS6cDC1n_cDC1n",comparisons = my_comparisons)
+
+plot.boxplot(celldata = stat_250117_ROI, factor = "MHCIIcDC1n_cDC1n",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PDL1cDC1n_cDC1n",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "PVRcDC1n_cDC1n",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "MHCIIMaccelln_Maccelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "CD86Maccelln_Maccelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_250117_ROI, factor = "pS6Maccelln_Maccelln",comparisons = my_comparisons)
+
+plot.boxplot(celldata = stat_250117_ROI, factor = "Fibn_totaln",comparisons = my_comparisons)
 
 ```
 
@@ -612,6 +537,418 @@ output_file
 write.csv(stat_241105_ROI, file = output_file, row.names = F) 
 
 ############################################################################################################################################################
+
+## set cell percentage based on domain
+```{r}
+# make stackbarplot according the domain ,
+celldata <- celldata %>%
+  mutate(across(c(domain, domain2), as.factor))
+celldata_CCR2<-celldata[celldata$ExpGroup=="CCR2KO",]
+celldata_WT<-celldata[celldata$ExpGroup=="WT",]
+levels_annotation = c("T cell CD4", "T cell CD8", "Tregs", "B cells","Neutrophils", "Macrophages","Monocytes", "Dendritic cells CD103", "Endothelium", "Epithelium", "Fibroblasts","Tumour")
+
+plot.celltypeperc <- function(celldata, title) {
+  date <- str_sub(gsub("-", "", Sys.Date()), -6, -1)
+  directory <- create.resultsdir(path = OUTPUT_PATH, name = "Stacked_barplots")
+  filename <- paste0(title, ".jpeg")
+  
+  # Ensure domain levels are correctly set
+  celldata$domain <- factor(celldata$domain, levels = c("Normal", "Interface", "Tumour", "n/a"))
+  
+  p <- ggplot(
+    data = celldata[which(celldata$domain != "n/a"), ],
+    aes(
+      x = factor(domain, levels = c("Normal","Interface","Tumour")),
+      fill = annotation  
+    )
+  ) +
+    geom_bar(position = "fill", colour = "black") +
+    scale_fill_manual(
+      values = c("T cell CD4" = "#B07AA1FF", "T cell CD8" = "#FF9D9AFF", "Tregs" = "#CC6666","B cells" = "#945931",  "Macrophages" = "#4E79A7FF", "Dendritic cells CD103" = "#FFCC66", "Neutrophils" = "#A0CBE8FF","Endothelium" = "#FFEA42",  "Epithelium" = "#FFF4A4FF", "Fibroblasts" = "#ABDDA4FF","Tumour" = "#704850FF","Monocytes"="#336666")
+    ) +
+    scale_y_continuous(labels = scales::percent) +
+    theme_classic() +
+    theme(
+      axis.text.x = element_text(angle = 60, size = 14, hjust = 1),
+      axis.text.y = element_text(size = 14),
+      plot.title = element_text(size = 6),
+      legend.title = element_blank(),
+      legend.text = element_text(size = 14),
+      axis.title = element_blank()
+    )
+  
+  filename <- paste0(date, "_", title, ".jpeg")
+  ggsave(
+    device = "jpeg", width = 2000, height = 2000, units = "px", dpi = 300,
+    path = directory, filename = filename
+  )
+  
+  return(p)
+}
+
+# Call the function
+plot.celltypeperc(celldata = celldata_CCR2, title = "Stacked_domain_CCR2_XDomain")
+plot.celltypeperc(celldata = celldata_WT, title = "Stacked_domain_WT_XDomain")
+# plot.celltypeperc(celldata = celldata[!celldata$annotation %in% c("Tumour", "Uncertain"),],
+#                   title = "Stacked_without_tumour")
+  plot.celltypeperc(celldata = celldata_WT[!celldata_WT$annotation %in% c("Tumour", "Endothelium"),],
+                  title = "Stacked_immunecells_domain_WT_Domain")
+    plot.celltypeperc(celldata = celldata_CCR2[!celldata_CCR2$annotation %in% c("Tumour", "Endothelium"),],
+                  title = "Stacked_immunecells_domain_CCR2_Domain")
+
+
+#x domain  y  annotation
+plot.celltypeperc <- function(celldata, title) {
+  date <- str_sub(gsub("-", "", Sys.Date()), -6, -1)
+  directory <- create.resultsdir(path = OUTPUT_PATH, name = "Stacked_barplots")
+  filename <- paste0(title, ".jpeg")
+  
+  # Ensure domain levels are correctly set
+  celldata$domain <- factor(celldata$domain, levels = c("Normal", "Interface", "Tumour", "n/a"))
+  
+  p <- ggplot(
+    data = celldata[which(celldata$domain != "n/a"), ],
+    aes(
+      x = factor(annotation, levels = levels_annotation),
+      fill = domain  # Use domain directly, already properly leveled
+    )
+  ) +
+    geom_bar(position = "fill", colour = "black") +
+    scale_fill_manual(
+      values = c(
+        "Normal" = "#B07AA1FF",
+        "Interface" = "#A0CBE8FF",
+        "Tumour" = "#ABDDA4FF",
+        "n/a" = "gray"
+      )
+    ) +
+    scale_y_continuous(labels = scales::percent) +
+    theme_classic() +
+    theme(
+      axis.text.x = element_text(angle = 60, size = 14, hjust = 1),
+      axis.text.y = element_text(size = 14),
+      plot.title = element_text(size = 6),
+      legend.title = element_blank(),
+      legend.text = element_text(size = 14),
+      axis.title = element_blank()
+    )
+  
+  filename <- paste0(date, "_", title, ".jpeg")
+  ggsave(
+    device = "jpeg", width = 2000, height = 2000, units = "px", dpi = 300,
+    path = directory, filename = filename
+  )
+  
+  return(p)
+}
+
+# Call the function
+plot.celltypeperc(celldata = celldata_CCR2, title = "Stacked_domain_CCR2")
+plot.celltypeperc(celldata = celldata_WT, title = "Stacked_domain_WT")
+
+
+
+
+plot.celltypeperc <- function(celldata, title) {
+  date <- str_sub(gsub("-", "", Sys.Date()), -6, -1)
+  directory <- create.resultsdir(path = OUTPUT_PATH, name = "Stacked_barplots")
+  filename <- paste0(title, ".jpeg")
+  
+  # Ensure domain levels are correctly set
+ 
+  
+  p <- ggplot(
+    data = celldata[which(celldata$domain != "n/a"), ],
+    aes(
+      x = factor(ROI_ID, levels = unique(celldata$ROI_ID)),
+      fill = annotation  
+    )
+  ) +
+    geom_bar(position = "fill", colour = "black") +
+    scale_fill_manual(
+      values = c("T cell CD4" = "#B07AA1FF", "T cell CD8" = "#FF9D9AFF", "Tregs" = "#CC6666","B cells" = "#945931",  "Macrophages" = "#4E79A7FF", "Dendritic cells CD103" = "#FFCC66", "Neutrophils" = "#A0CBE8FF","Endothelium" = "#FFEA42",  "Epithelium" = "#FFF4A4FF", "Fibroblasts" = "#ABDDA4FF","Tumour" = "#704850FF","Monocytes"="#336666")
+    ) +
+    scale_y_continuous(labels = scales::percent) +
+    theme_classic() +
+    theme(
+      axis.text.x = element_text(angle = 60, size = 14, hjust = 1),
+      axis.text.y = element_text(size = 14),
+      plot.title = element_text(size = 6),
+      legend.title = element_blank(),
+      legend.text = element_text(size = 14),
+      axis.title = element_blank()
+    )
+  
+  filename <- paste0(date, "_", title, ".jpeg")
+  ggsave(
+    device = "jpeg", width = 2000, height = 2000, units = "px", dpi = 300,
+    path = directory, filename = filename
+  )
+  
+  return(p)
+}
+
+plot.celltypeperc(celldata = celldata, title = "Stacked_ROI")
+    plot.celltypeperc(celldata = celldata[!celldata$annotation %in% c("Tumour", "Endothelium","Epithelium"),],
+                  title = "Stacked_immunecells_ROI")
+
+```
+#Boxplot for each domain
+```{r}
+celldata <- celldata %>%
+  mutate(across(c(domain, domain2), as.factor))
+celldata_Normal<-celldata[celldata$domain=="Normal",]
+celldata_Tumour<-celldata[celldata$domain=="Tumour",]
+celldata_Interface<-celldata[celldata$domain=="Interface",]
+stat_251223_Tumourdomain = celldata_Tumour %>%
+ # group_by(ExpGroup,ROI_ID,MouseID) %>%
+  group_by(ExpGroup,ROI_ID) %>%
+    dplyr::summarise(
+    totaln = n(),
+    Tumourn = sum(annotation=="Tumour"),
+    Tcelln = sum(annotation %in% c("T cell CD4","T cell CD8","Tregs")),
+    CD4n = sum(annotation=="T cell CD4"),
+    CD8n = sum(annotation=="T cell CD8"),
+    Tregn= sum(annotation=="Tregs"),
+    Bcelln= sum(annotation=='B cells'),
+    Neutn = sum(annotation=="Neutrophils"),
+    Maccelln = sum(annotation =="Macrophages"),
+     M1Macn= sum(anncluster=="19_Macrophages"),
+    M2Macn= sum(anncluster %in% c("06_Macrophages" ,"07_Macrophages" , "17_Macrophages","20_Macrophages" , "22_Macrophages","29_Macrophages")),
+    Monon=sum(annotation=='Monocytes'),
+    Fibn = sum(annotation=="Fibroblasts"),
+    Endon=sum(annotation=="Endothelium"),
+    Epin=sum(annotation=="Epithelium"),
+    cDC1n = sum(annotation %in% c("Dendritic cells CD103")),
+    immunecellsn = sum(annotation %in% c("T cell CD4","T cell CD8","Tregs","Neutrophils","Macrophages","B cells","Dendritic cells CD103",'Monocytes')),
+
+    )%>%
+ # group_by(MouseID, ROI_ID, ExpGroup) %>%
+  group_by(ExpGroup,ROI_ID) %>%
+  mutate(          
+         Tcelln_immunecellsn = Tcelln/immunecellsn,
+         Bcelln_immunecellsn = Bcelln/immunecellsn,
+         Neutn_immunecellsn = Neutn/immunecellsn,
+         Monon_immunecellsn = Monon/immunecellsn,
+         Maccelln_immunecellsn= Maccelln/immunecellsn, 
+         cDC1n_immunecellsn= cDC1n/immunecellsn,
+         Monon_immunecellsn= Monon/immunecellsn, 
+         Fibn_totaln =Fibn/totaln,
+         Endon_totaln =Endon/totaln,
+
+                    CD4n_Tcelln = CD4n/Tcelln,
+                    CD8n_Tcelln = CD8n/Tcelln,
+                    Tregn_Tcelln = Tregn/Tcelln,
+          M1Macn_Maccelln = M1Macn/Maccelln,
+                    M2Macn_Maccelln =M2Macn/Maccelln,
+                     M1Macn_immunecellsn = M1Macn/immunecellsn,
+                    M2Macn_immunecellsn =M2Macn/immunecellsn,
+                    CD4n_immunecellsn = CD4n/immunecellsn,
+                    CD8n_immunecellsn = CD8n/immunecellsn,
+                    Tregn_immunecellsn = Tregn/immunecellsn,
+                    cDC1n_immunecellsn = cDC1n/immunecellsn,
+                    Maccelln_immunecellsn = Maccelln/immunecellsn,
+                           ) %>%
+  ungroup()
+
+stat_251223_Interfacedomain = celldata_Interface %>%
+ # group_by(ExpGroup,ROI_ID,MouseID) %>%
+  group_by(ExpGroup,ROI_ID) %>%
+    dplyr::summarise(
+    totaln = n(),
+    Tumourn = sum(annotation=="Tumour"),
+    Tcelln = sum(annotation %in% c("T cell CD4","T cell CD8","Tregs")),
+    CD4n = sum(annotation=="T cell CD4"),
+    CD8n = sum(annotation=="T cell CD8"),
+    Tregn= sum(annotation=="Tregs"),
+    Bcelln= sum(annotation=='B cells'),
+    Neutn = sum(annotation=="Neutrophils"),
+    Maccelln = sum(annotation =="Macrophages"),
+     M1Macn= sum(anncluster=="19_Macrophages"),
+    M2Macn= sum(anncluster %in% c("06_Macrophages" ,"07_Macrophages" , "17_Macrophages","20_Macrophages" , "22_Macrophages","29_Macrophages")),
+    Monon=sum(annotation=='Monocytes'),
+    Fibn = sum(annotation=="Fibroblasts"),
+    Endon=sum(annotation=="Endothelium"),
+    Epin=sum(annotation=="Epithelium"),
+    cDC1n = sum(annotation %in% c("Dendritic cells CD103")),
+    immunecellsn = sum(annotation %in% c("T cell CD4","T cell CD8","Tregs","Neutrophils","Macrophages","B cells","Dendritic cells CD103",'Monocytes')),
+
+    )%>%
+ # group_by(MouseID, ROI_ID, ExpGroup) %>%
+  group_by(ExpGroup,ROI_ID) %>%
+  mutate(          
+           Tcelln_immunecellsn = Tcelln/immunecellsn,
+         Bcelln_immunecellsn = Bcelln/immunecellsn,
+         Neutn_immunecellsn = Neutn/immunecellsn,
+         Monon_immunecellsn = Monon/immunecellsn,
+         Maccelln_immunecellsn= Maccelln/immunecellsn, 
+         cDC1n_immunecellsn= cDC1n/immunecellsn,
+         Monon_immunecellsn= Monon/immunecellsn, 
+         Fibn_totaln =Fibn/totaln,
+          Endon_totaln =Endon/totaln,
+
+                    CD4n_Tcelln = CD4n/Tcelln,
+                    CD8n_Tcelln = CD8n/Tcelln,
+                    Tregn_Tcelln = Tregn/Tcelln,
+          M1Macn_Maccelln = M1Macn/Maccelln,
+                    M2Macn_Maccelln =M2Macn/Maccelln,
+                     M1Macn_immunecellsn = M1Macn/immunecellsn,
+                    M2Macn_immunecellsn =M2Macn/immunecellsn,
+                    CD4n_immunecellsn = CD4n/immunecellsn,
+                    CD8n_immunecellsn = CD8n/immunecellsn,
+                    Tregn_immunecellsn = Tregn/immunecellsn,
+                    cDC1n_immunecellsn = cDC1n/immunecellsn,
+                    Maccelln_immunecellsn = Maccelln/immunecellsn,
+                           ) %>%
+  ungroup()
+stat_251223_Normaldomain = celldata_Normal %>%
+ # group_by(ExpGroup,ROI_ID,MouseID) %>%
+  group_by(ExpGroup,ROI_ID) %>%
+    dplyr::summarise(
+    totaln = n(),
+    Tumourn = sum(annotation=="Tumour"),
+    Tcelln = sum(annotation %in% c("T cell CD4","T cell CD8","Tregs")),
+    CD4n = sum(annotation=="T cell CD4"),
+    CD8n = sum(annotation=="T cell CD8"),
+    Tregn= sum(annotation=="Tregs"),
+    Bcelln= sum(annotation=='B cells'),
+    Neutn = sum(annotation=="Neutrophils"),
+    Maccelln = sum(annotation =="Macrophages"),
+    M1Macn= sum(anncluster=="19_Macrophages"),
+    M2Macn= sum(anncluster %in% c("06_Macrophages" ,"07_Macrophages" , "17_Macrophages","20_Macrophages" , "22_Macrophages","29_Macrophages")),
+    Monon=sum(annotation=='Monocytes'),
+    Fibn = sum(annotation=="Fibroblasts"),
+    Endon=sum(annotation=="Endothelium"),
+    Epin=sum(annotation=="Epithelium"),
+    cDC1n = sum(annotation %in% c("Dendritic cells CD103")),
+    immunecellsn = sum(annotation %in% c("T cell CD4","T cell CD8","Tregs","Neutrophils","Macrophages","B cells","Dendritic cells CD103",'Monocytes')),
+
+    )%>%
+ # group_by(MouseID, ROI_ID, ExpGroup) %>%
+  group_by(ExpGroup,ROI_ID) %>%
+  mutate(          
+          Tcelln_immunecellsn = Tcelln/immunecellsn,
+         Bcelln_immunecellsn = Bcelln/immunecellsn,
+         Neutn_immunecellsn = Neutn/immunecellsn,
+         Monon_immunecellsn = Monon/immunecellsn,
+         Maccelln_immunecellsn= Maccelln/immunecellsn, 
+         cDC1n_immunecellsn= cDC1n/immunecellsn,
+         Monon_immunecellsn= Monon/immunecellsn, 
+         Fibn_totaln =Fibn/totaln,
+          Endon_totaln =Endon/totaln,
+
+                    CD4n_Tcelln = CD4n/Tcelln,
+                    CD8n_Tcelln = CD8n/Tcelln,
+                    Tregn_Tcelln = Tregn/Tcelln,
+                    M1Macn_Maccelln = M1Macn/Maccelln,
+                    M2Macn_Maccelln =M2Macn/Maccelln,
+                     M1Macn_immunecellsn = M1Macn/immunecellsn,
+                    M2Macn_immunecellsn =M2Macn/immunecellsn,
+                    CD4n_immunecellsn = CD4n/immunecellsn,
+                    CD8n_immunecellsn = CD8n/immunecellsn,
+                    Tregn_immunecellsn = Tregn/immunecellsn,
+                    cDC1n_immunecellsn = cDC1n/immunecellsn,
+                    Maccelln_immunecellsn = Maccelln/immunecellsn,
+                           ) %>%
+  ungroup()
+
+plot.boxplot = function(celldata, factor, comparisons) {
+  factor = ensym(factor)
+  ggplot(celldata, aes(x = ExpGroup, y = !!factor, colour = ExpGroup)) +
+    geom_boxplot() + geom_dotplot(aes(fill = ROI_ID),method = "histodot", binaxis='y',
+                                  stackdir='center', dotsize = 0.8) +
+     geom_text(aes(label = ROI_ID), position = position_jitter(width = 0.2, height = 0), size = 3, hjust = -0.2) + # 添加标签
+     #scale_y_log10() +
+     scale_y_continuous(labels = scales::percent) +
+    scale_x_discrete(limits=c("WT", "CCR2KO")) +
+    stat_compare_means(comparisons = comparisons,method = "wilcox.test", label = "p.signif",size=6,fontface="bold") +
+    theme_classic() + ggtitle(factor) +
+    theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+          plot.background = element_blank(),
+          axis.title = element_blank(),
+          axis.text.y = element_text(size = 14, colour = "black"),
+          axis.text.x = element_text(size = 17, face = "bold", colour = "black"), 
+          legend.position = "none",
+          legend.title = element_blank(),
+          legend.text = element_text(size = 10))
+  date <- Sys.Date()
+  ggsave(filename = paste0(date, "Boxplot_", factor, ".jpeg"),
+         path = file.path(OUTPUT_PATH, "Boxplots/Boxplots_percentage/domain/Normal_domain"), bg = "white",
+         width = 2100, height = 1700, units = "px")
+}
+##plot boxplot according to the factor   # title is legend in image, filename is factor
+my_comparisons=list(c("WT","CCR2KO"))
+      
+    
+
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "Tcelln_immunecellsn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "Bcelln_immunecellsn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "Neutn_immunecellsn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "Maccelln_immunecellsn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "Monon_immunecellsn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "Fibn_totaln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "CD4n_Tcelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "CD8n_Tcelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "Tregn_Tcelln",comparisons = my_comparisons)
+
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "Fibn_totaln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "M1Macn_Maccelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "M2Macn_Maccelln",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "M1Macn_immunecellsn",comparisons = my_comparisons)
+plot.boxplot(celldata = stat_251223_Normaldomain, factor = "M2Macn_immunecellsn",comparisons = my_comparisons)
+
+```
+
+
+
+date <- Sys.Date()
+output_file = paste0(OUTPUT_PATH, "stat_251223_Interfacedomain.csv")
+output_file
+write.csv(stat_251223_Interfacedomain, file = output_file, row.names = F) 
+
+output_file = paste0(OUTPUT_PATH, "stat_251223_Tumourdomain.csv")
+write.csv(stat_251223_Interfacedomain, file = output_file, row.names = F) 
+
+output_file = paste0(OUTPUT_PATH, "stat_251223_Normaldomain.csv")
+write.csv(stat_251223_Interfacedomain, file = output_file, row.names = F) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
