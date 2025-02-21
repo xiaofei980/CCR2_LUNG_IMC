@@ -51,7 +51,7 @@ celldata = read.csv(paste0(INPUT_PATH, "/250218_normalised_concatenated_scaled_d
 # Add clustering and t-SNE columns to datafiles
 # tSNEcsv is sampledtSNE 
 tSNECSV = read.csv(file.path(INPUT_PATH, "250218_tSNE.csv"))
-clustCSV = read.csv(file.path(INPUT_PATH, "250218_clustering_k30_k20_k20_k15_19markers.csv"))
+clustCSV = read.csv(file.path(INPUT_PATH, "250218_clustering_k30_k25_k20_k15_19markers.csv"))
 celldata = cbind(celldata, clustCSV)
 # Load in the image metadata
 imagemetadata = read.csv(file.path(INPUT_PATH, "imagemetadata.csv"))
@@ -96,15 +96,16 @@ INPUT_PATH = file.path(BASE, "Projectfile/Data/Figures_input")
 OUTPUT_PATH = file.path(BASE, "Projectfile/Results/Figures_output/")
 #input celldata 
 celldata = read.csv(paste0(INPUT_PATH, "/241202_celldata.csv"))
-CellCD = read.csv(paste0(INPUT_PATH, "/241101CellCD.csv"))
-TCD = read.csv(paste0(INPUT_PATH, "/241101TCD.csv"))
-TUMCD =read.csv(paste0(INPUT_PATH, "/241101TUMCD.csv"))
-MacCD =read.csv(paste0(INPUT_PATH, "/241101MacCD.csv"))
-MacDendCD =read.csv(paste0(INPUT_PATH, "/241101MacDendCD.csv"))
-FibEndoCD =read.csv(paste0(INPUT_PATH, "/241101FibEndoCD.csv"))
-MacFibTumNeuCD =read.csv(paste0(INPUT_PATH, "/241101MacDendFibTumNeuCD.csv"))
-stat_241105_ROI = read.csv(paste0(INPUT_PATH, "/_stat_241105_ROI.csv"))
-imagemetadata = read.csv(file.path(INPUT_PATH, "imagemetadata.csv"))
+CellCD = read.csv(paste0(OUTPUT_PATH, "/250218CellCD.csv"))
+TCD = read.csv(paste0(OUTPUT_PATH, "/250218TCD.csv"))
+TumourFibEndoEpiCD =read.csv(paste0(OUTPUT_PATH, "/250218TumourFibEndoEpiCD.csv"))
+MacDendNeuMonoCD=read.csv(paste0(OUTPUT_PATH, "/250218MacDendNeuMonoCD.csv"))
+MacCD =read.csv(paste0(OUTPUT_PATH, "/241101MacCD.csv"))
+MacDendCD =read.csv(paste0(OUTPUT_PATH, "/241101MacDendCD.csv"))
+FibEndoCD =read.csv(paste0(OUTPUT_PATH, "/241101FibEndoCD.csv"))
+MacFibTumNeuCD =read.csv(paste0(OUTPUT_PATH, "/241101MacDendFibTumNeuCD.csv"))
+stat_241105_ROI = read.csv(paste0(OUTPUT_PATH, "/_stat_241105_ROI.csv"))
+imagemetadata = read.csv(file.path(OUTPUT_PATH, "imagemetadata.csv"))
 
 ```
 
@@ -444,7 +445,8 @@ Generate a heatmap with markers versus clusters.
 #checking annotation with scatter plot
 ```{r}
 plot.scatter(celldata, "k20", 12, Xmarker = "CD3e", Ymarker = "Foxp3",dim=1.5)
-plot.scatter(celldata, "k20", 21, Xmarker = "CD11b", Ymarker = "CD44",dim=0.9)
+plot.scatter(celldata, "k20", 21, Xmarker = "CD11b", Ymarker = "LY6G",dim=1.5)
+plot.scatter(celldata, "k20", 21, Xmarker = "CD45", Ymarker = "LY6G",dim=1.5)
 plot.scatter(celldata, "k20", 21, Xmarker = "Ly6C", Ymarker = "LY6G",dim=1.5)
 plot.scatter(celldata, "k20", 6, Xmarker = "CD11c", Ymarker = "F480",dim=1)
 plot.scatter(celldata, "k20", 6, Xmarker = "CD11c", Ymarker = "CD68",dim=1)
@@ -485,7 +487,7 @@ plot.scatter(celldata, "k20", 17, Xmarker = "MHCcII", Ymarker = "CD44",dim=1.5)
 plot.scatter(celldata, "k20", 17, Xmarker = "CD11c", Ymarker = "PVR",dim=1)
 plot.scatter(celldata, "k20", 17, Xmarker = "CD11c", Ymarker = "pS6",dim=1)
 plot.scatter(celldata, "k20", 17, Xmarker = "CD11c", Ymarker = "PDL1",dim=1)
-plot.scatter(celldata, "k20", 17, Xmarker = "F480", Ymarker = "CD44",dim=1)
+plot.scatter(celldata, "k20", 21, Xmarker = "CD103", Ymarker = "MHCII",dim=1)
 plot.scatter(celldata[celldata$ROI_ID=="08_MOC2_WT",], "k20", 17, Xmarker = "MHCcII", Ymarker = "CD11c",dim=2)
 plot.scatter(celldata[celldata$ROI_ID=="09_MOC2_WT",], "k20", 17, Xmarker = "MHCcII", Ymarker = "CD11c",dim=2)
 plot.scatter(celldata[celldata$ROI_ID=="10_MOC2_WT",], "k20", 17, Xmarker = "MHCcII", Ymarker = "CD11c",dim=2)
@@ -604,15 +606,21 @@ celldata$anncluster = stringr::str_pad(celldata$k20, 2, side="left", pad="0")
 unique(celldata$anncluster)
 # Split clusters based on thresholds for marker intensities
 celldata[which(celldata$anncluster == "12"
-               & celldata$MI_Foxp3 >= 0.4), "anncluster"] = "12A"
+               & celldata$MI_Foxp3 >= 0.3), "anncluster"] = "12A"
 celldata[which(celldata$anncluster == "12"), "anncluster"] = "12B"
 ##  21  split  to neutrophils and CD11b single positive celsl
 
 
-#split 9 to DC and Mac
-celldata[which(celldata$anncluster == "09"
-               & celldata$MI_MHCII > 0.9), "anncluster"] = "09B"
-celldata[which(celldata$anncluster == "09"), "anncluster"] = "09A"
+#split 21 tomono an neutropihls
+celldata[which(celldata$anncluster == "21"
+               & celldata$MI_LY6G > 0.3), "anncluster"] = "21A" # cehckede 0.25  similar to 0.3   0.4 is too high 
+celldata[which(celldata$anncluster == "21"), "anncluster"] = "21B"
+
+
+#split 17 to DC103 and uncertain 
+celldata[which(celldata$anncluster == "17"
+               & celldata$MI_CD103 > 1.5), "anncluster"] = "17A" # cehckede 0.25  similar to 0.3   0.4 is too high 
+celldata[which(celldata$anncluster == "17"), "anncluster"] = "17B"
 
 
 #250218 varified by xiaofei 
@@ -625,8 +633,7 @@ celldata[which(celldata$anncluster == "05"), "anncluster"] = "05_Macrophages"#wi
 celldata[which(celldata$anncluster == "06"), "anncluster"] = "06_Macrophages"# checked
 celldata[which(celldata$anncluster == "07"), "anncluster"] = "07_Tumour"#checked
 celldata[which(celldata$anncluster == "08"), "anncluster"] = "08_Fibroblasts"#checked
-celldata[which(celldata$anncluster == "09A"), "anncluster"] = "09A_Macrophages"
-celldata[which(celldata$anncluster == "09B"), "anncluster"] = "09B_Dendritic cells"
+celldata[which(celldata$anncluster == "09"), "anncluster"] = "09_Dendritic cells"# checked with febe, from umap it is dc 
 celldata[which(celldata$anncluster == "10"), "anncluster"] = "10_Tumour" # umap shows more like tumour ,also not typical CK19+area 
 celldata[which(celldata$anncluster == "11"), "anncluster"] = "11_Endothelium"# also express ly6c
 celldata[which(celldata$anncluster == "12A"), "anncluster"] = "12A_Tregs" #
@@ -635,11 +642,13 @@ celldata[which(celldata$anncluster == "13"), "anncluster"] = "13_Endothelium"#En
 celldata[which(celldata$anncluster == "14"), "anncluster"] = "14_Tumour"
 celldata[which(celldata$anncluster == "15"), "anncluster"] = "15_Tumour"
 celldata[which(celldata$anncluster == "16"), "anncluster"] = "16_Neutrophils"# almost all express ly6g
-celldata[which(celldata$anncluster == "17"), "anncluster"] = "17_Dendritic cells CD103"
+celldata[which(celldata$anncluster == "17A"), "anncluster"] = "17A_Uncertain"
+celldata[which(celldata$anncluster == "17B"), "anncluster"] = "17B_Dendritic cells CD103"
 celldata[which(celldata$anncluster == "18"), "anncluster"] = "18_T cell CD8"
 celldata[which(celldata$anncluster == "19"), "anncluster"] = "19_Epithelium"#mainlyCLK19 ,clear epitheliums, airway 
 celldata[which(celldata$anncluster == "20"), "anncluster"] = "20_Tumour"  
-celldata[which(celldata$anncluster == "21"), "anncluster"] = "21_Neutrophils"# 
+celldata[which(celldata$anncluster == "21A"), "anncluster"] = "21A_Neutrophils"# will split to neutrphils and monocytes
+celldata[which(celldata$anncluster == "21B"), "anncluster"] = "21B_Monocytes" # cutoff setting by images
 celldata[which(celldata$anncluster == "22"), "anncluster"] = "22_Macrophages" # totally split in UMAP   in 32566e images, it is macrophages clear . 
 celldata[which(celldata$anncluster == "23"), "anncluster"] = "23_Tumour" # few
 celldata[which(celldata$anncluster == "24"), "anncluster"] = "24_Endothelium" # or tumour?
@@ -650,7 +659,7 @@ celldata[which(celldata$anncluster == "28"), "anncluster"] = "28_Fibroblasts" #
 celldata[which(celldata$anncluster == "29"), "anncluster"] = "29_Tumour"# no cluster in 3371 5a mainly554b-2 
 celldata[which(celldata$anncluster == "30"), "anncluster"] = "30_Macrophages"#all few checked
 celldata[which(celldata$anncluster == "31"), "anncluster"] = "31_Epithelium"#no cluster in 33715a. all few
-celldata[which(celldata$anncluster == "32"), "anncluster"] = "32_CD8TCRgdt" #TCRgrt?   not much in all images double positive
+celldata[which(celldata$anncluster == "32"), "anncluster"] = "32_Uncertain" #TCRgrt?   not much in all images double positive
 celldata[which(celldata$anncluster == "33"), "anncluster"] = "33_Fibroblasts"
 celldata[which(celldata$anncluster == "34"), "anncluster"] = "34_Uncertain"#  mainly edge, possible real uncertain
 # Generate cluster annotation --------------------------------------------------
@@ -885,7 +894,7 @@ if (F) {
 # print(TCclusters)
 set.seed(222)
   TCD = generate.UMAP(celldata = celldata, clusters = TCellClusters,
-                      markers = Tcell_lineage, nsample = 4000, filename = "250218TCD.csv")
+                      markers = Tcell_lineage, nsample = 4000, filename = "250221TCD.csv")
 set.seed(111)  
   # Macrophages & Dendritic cells
   MacDendCellClusters = get.clusters(patterns = c("Macrophage", "Dendritic","DC"))
@@ -915,7 +924,7 @@ set.seed(111)
                          "MI_CD68", "MI_CD206",  "MI_CD11c", "MI_CD11b","MI_LY6G",  "MI_CD44") #, "MI_LY6G",  "MI_CD44")
   MacDendNeuMonoCD = generate.UMAP(celldata = celldata, clusters = MacDendNeuMonoCellClusters,
                             markers = MacDendNeuMonoCell_lineage, nsample = 20000,
-                            filename = "250218MacDendNeuCD.csv")
+                            filename = "250221MacDendNeuMonoCD.csv")
   
   
  set.seed(222)
@@ -977,7 +986,7 @@ CellColumns = c("MI_B220","MI_CD103","MI_CD11b","MI_CD11c","MI_CD206","MI_CD3e",
 
 CellCD= generate.UMAP(celldata = celldata, clusters = CellClusters,
                             markers = CellColumns, nsample = 20000,
-                            filename = "250219CellCD.csv")
+                            filename = "250221CellCD.csv")
 
   }
 
@@ -1342,9 +1351,9 @@ ggplot(MacDendNeuMonoCD_filter,
 
 MacDendNeuMonoCD_filter <- MacDendNeuMonoCD_filter %>%
   mutate(color = case_when(
-    MI_CD68 > 0.5 ~ "green",
-    MI_F480 > 0.5 ~ "red", 
-    k20 == "9" ~ "yellow",  
+    MI_CD11b > 0.25 ~ "green",
+    MI_LY6G > 0.2 ~ "red", 
+    k20 == "21" ~ "yellow",  
     TRUE ~ "other"  
   )) %>%
   arrange(color == "other", color == "yellow", color == "red",color == "green")  
@@ -1363,15 +1372,19 @@ ggplot(MacDendNeuMonoCD_filter,
         plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
         panel.grid = element_blank(),
         axis.ticks = element_blank()) +
-  scale_color_manual(values = c("red" = "red","yellow" = "yellow", "green" = "green",  "other" = "grey"))
-
-
-#CD11c
-MacDendNeuMonoCD_filter$color <- ifelse(MacDendNeuMonoCD_filter$MI_MHCII > 0.9, "black", "other")
+scale_color_manual(
+  values = c("red" = "red", "yellow" = "yellow", "green" = "green", "other" = "grey"),
+  labels = c("red" = "MI_LY6G > 0.2", 
+             "green" = "MI_CD11b > 0.25", 
+             "yellow" = "k20 == 21", 
+             "other" = "Other")
+)
+#Ly6g
+MacDendNeuMonoCD_filter$color <- ifelse(MacDendNeuMonoCD_filter$MI_LY6G > 0.2, "black", "other")
 ggplot(MacDendNeuMonoCD_filter,
        aes(x = umap1, y = umap2, colour = color)) +
   geom_point(size = 0.3) + 
-  ggtitle("U-MAP MacDendNeuMonoCD_filter_MHCII ") + 
+  ggtitle("U-MAP MacDendNeuMonoCD_filter_Ly6G ") + 
   guides(colour = guide_legend(override.aes = list(size = 5), title = "Cluster")) +
   theme_classic() + 
   labs(x = "UMAP 1", y = "UMAP 2") +
@@ -1382,15 +1395,52 @@ ggplot(MacDendNeuMonoCD_filter,
         plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
         panel.grid = element_blank(),
         axis.ticks = element_blank()) +
-  scale_color_manual(values = c("black" = "black", "other" = "grey"))
-MacDendNeuMonoCD_filter$color <- ifelse(MacDendNeuMonoCD_filter$MI_MHCII > 0.9, "black", "other")
+  scale_color_manual(values = c("black" = "black", "other" = "grey"),labels=c("black"="MI_Ly6G>0.2","grey"="other"))
 
-# TREGS IN TCellcd
-TCD$color <- ifelse(TCD$MI_Foxp3 > 0.4, "black", "other")
-ggplot(TCD,
+#Ly6g
+MacDendNeuMonoCD_filter$color <- ifelse(MacDendNeuMonoCD_filter$MI_LY6G > 0.3, "black", "other")
+ggplot(MacDendNeuMonoCD_filter,
        aes(x = umap1, y = umap2, colour = color)) +
   geom_point(size = 0.3) + 
-  ggtitle("TCD_foxp3 ") + 
+  ggtitle("U-MAP MacDendNeuMonoCD_filter_Ly6G ") + 
+  guides(colour = guide_legend(override.aes = list(size = 5), title = "Cluster")) +
+  theme_classic() + 
+  labs(x = "UMAP 1", y = "UMAP 2") +
+  theme(plot.background = element_blank(),
+        axis.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 17, face = "bold"),
+        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
+        panel.grid = element_blank(),
+        axis.ticks = element_blank()) +
+  scale_color_manual(values = c("black" = "black", "other" = "grey"),labels=c("black"="MI_Ly6G>0.3","grey"="other"))
+
+#CD103
+MacDendNeuMonoCD_filter$color <- ifelse(MacDendNeuMonoCD_filter$MI_CD103> 1.5, "black", "other")
+ggplot(MacDendNeuMonoCD_filter,
+       aes(x = umap1, y = umap2, colour = color)) +
+  geom_point(size = 0.3) + 
+  ggtitle("U-MAP MacDendNeuMonoCD_filter_CD103 ") + 
+  guides(colour = guide_legend(override.aes = list(size = 5), title = "Cluster")) +
+  theme_classic() + 
+  labs(x = "UMAP 1", y = "UMAP 2") +
+  theme(plot.background = element_blank(),
+        axis.title = element_text(size = 15),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 17, face = "bold"),
+        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
+        panel.grid = element_blank(),
+        axis.ticks = element_blank()) +
+  scale_color_manual(values = c("black" = "black", "other" = "grey"),labels=c("black"="MI_CD103> 1.5","grey"="other"))
+
+
+
+# TREGS IN TCellcd
+CellCD_filter$color <- ifelse(CellCD_filter$MI_CD103>2, "black", "other")
+ggplot(CellCD_filter,
+       aes(x = umap1, y = umap2, colour = color)) +
+  geom_point(size = 0.3) + 
+  ggtitle("CellCD_cluster32 ") + 
   guides(colour = guide_legend(override.aes = list(size = 5), title = "Cluster")) +
   theme_classic() + 
   labs(x = "UMAP 1", y = "UMAP 2") +
@@ -1406,6 +1456,56 @@ ggplot(TCD,
 ```
 
 
+#check if extrame value not cleaned in normalization
+```{r}
+#check the mean and sd 
+summary_data <- celldata %>%
+  select(where(is.numeric)) %>%
+  summarise(across(everything(), list(mean = mean, sd = sd)))
+
+high_sd_markers <- summary_data %>%
+  select(ends_with("sd")) %>%
+  filter(if_any(starts_with("MI_"), ~ . > 3)) 
+print(high_sd_markers)
+
+# 计算 CD103 的 Z-score
+zscore_cd103 <- scale(celldata$MI_CD103)
+
+# 标记 Z-score > 3 或 < -3 的异常值
+abnormal_cd103 <- which(abs(zscore_cd103) > 3)
+
+# 查看异常值所在的行
+celldata[abnormal_cd103, ]
+# 绘制 MI_CD103 的箱型图
+boxplot(celldata$MI_CD103, 
+        main = "Boxplot of MI_CD103 with Abnormal Values",  
+        ylab = "MI_CD103 Expression",                       
+        col = "lightblue",                                   
+        border = "black")                                    
+boxplot(celldata$MI_CD68, 
+        main = "Boxplot of MI_CD68 with Abnormal Values",  
+        ylab = "MI_CD103 Expression",                       
+        col = "lightblue",                                   
+        border = "black")    
+
+
+
+# check the z score   doesnt work  here 
+numeric_data <- celldata %>% select(where(is.numeric))
+z_scores <- as.data.frame(scale(numeric_data))
+outlier_matrix <- abs(z_scores) > 10 
+outlier_markers <- apply(outlier_matrix, 1, function(row) {
+  paste(names(row)[row], collapse = ", ")  
+})
+celldata$Outlier_Markers <- outlier_markers  
+celldata$Outlier <- apply(outlier_matrix, 1, any)  
+outlier_cells <- celldata %>% filter(Outlier == TRUE)
+outlier_table <- outlier_cells[, c("cell_ID", "Outlier_Markers")]
+print(outlier_table)
+
+
+
+```
 
 
 
@@ -1428,7 +1528,7 @@ ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
   #geom_point(data = celldata[which(celldata$MI_B220>0.3),], size = 0.01, colour = "red") +
   # geom_point(data = celldata[which(celldata$MI_B220>0.3&celldata$MI_CollagenI>0.5),], size = 0.01, colour = "yellow") +
 #geom_point(data = celldata[which(celldata$MI_Foxp3>0.5),], size = 0.01, colour = "red") +
- geom_point(data = celldata[which(celldata$k20=="2"),], size = 0.01, colour = "red") +
+ geom_point(data = celldata[which(celldata$k20=="17"&celldata$MI_CD103>3),], size = 0.01, colour = "red") +
   theme_classic() +
   theme(axis.line=element_blank(),
         axis.text.x=element_blank(),
@@ -1450,15 +1550,15 @@ ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
 ##plot dots on one specific original image
 ```{r}
 #lag3 0.5PVR 0.25 almost all 0.3 clealy less MHCII   0.25 PDL1  0.15 CD24  0.2 PS6 0.2  Casp 0.3 colleagen
-ROI13<-subset(celldata, ROI_ID == "04_CCR2KO") #  "01_CCR2KO" "02_CCR2KO" "03_CCR2KO" "04_CCR2KO" "05_CCR2KO" "06_CCR2KO" "07_WT"     "08_WT"     "09_WT"     "10_WT"     "11_WT"     "12_WT"   
+ROI13<-subset(celldata, ROI_ID == "10_WT") #  "01_CCR2KO" "02_CCR2KO" "03_CCR2KO" "04_CCR2KO" "05_CCR2KO" "06_CCR2KO" "07_WT"     "08_WT"     "09_WT"     "10_WT"     "11_WT"     "12_WT"   
 ggplot(ROI13, aes(x= Location_Center_X, y = -Location_Center_Y)) +
   #ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
   geom_point(size = 0.5, color = "black") +
     #geom_point(data = ROI13[which(ROI13$annotation=="B cells"),], size = 0.1, colour = "red")+
   #geom_point(data = ROI13[which(ROI13$annotation=="B cells"&ROI13$MI_CollagenI>0.5),], size = 0.1, colour = "yellow")+
    
-  #geom_point(data = ROI13[which(ROI13$k20=="4"),], size = 0.1, colour = "red")+
-  geom_point(data = ROI13[which(ROI13$k20=="21" & ROI13$MI_LY6G>0.25),], size = 1., colour = "red")+
+ geom_point(data = ROI13[which(ROI13$k20=="21"&ROI13$MI_LY6G>0.4),], size = 0.5, colour = "yellow") +
+ geom_point(data = ROI13[which(ROI13$k20=="21"&ROI13$MI_LY6G<0.4),], size = 0.5, colour = "red") +
 
   theme_classic() +
   theme(axis.line=element_blank(),
@@ -1500,10 +1600,10 @@ plot.tSNE(celldata_subsample, c("tSNE1", "tSNE2"), "cell_type", savetSNE = F,
 ```
 ```{r}
 date<- format(Sys.Date(), "%y%m%d")
-output_file = paste0(INPUT_PATH,"/", date, "_celldata.csv")
+output_file = paste0(OUTPUT_PATH,"/", date, "_celldata.csv")#OUTPUT_PATH
 output_file
 write.csv(celldata, file = output_file, row.names = F) 
-write.csv(celldata,OUTPUT_PATH)
+
 
 
 ```
@@ -1513,9 +1613,9 @@ Create a barplot displaying the percentage of each celltypes to the total
 amount of cells in one experimental group.
 
 ```{r stacked barplot function}
-celldata<-read.csv("/mnt/Data1/groupfebe/runs/Xiaofei/240920_Sahai_CCR2_IMC/Projectfile/Data/Figures_input/241103_celldata.csv")
-celldata$ExpGroup[celldata$ExpGroup=="MOC2_WT"]<-"WT"
-celldata$ExpGroup[celldata$ExpGroup=="MOC2_CCR2KO"]<-"CCR2KO"
+# celldata<-read.csv("/mnt/Data1/groupfebe/runs/Xiaofei/240920_Sahai_CCR2_IMC/Projectfile/Data/Figures_input/241103_celldata.csv")
+# celldata$ExpGroup[celldata$ExpGroup=="MOC2_WT"]<-"WT"
+# celldata$ExpGroup[celldata$ExpGroup=="MOC2_CCR2KO"]<-"CCR2KO"
 unique(celldata$ExpGroup)
 create.resultsdir <- function(path, name) {
   dir_path <- file.path(path, name)
@@ -1587,8 +1687,7 @@ matchColours = function(levels) {
 #colours
 colours =  c("B cells" = "#945931",  "Dendritic cells" = "#FF9933", "Dendritic cells CD103" = "#FFCC66", "Endothelium" = "#FFEA42",
               "Epithelium" = "#FFF4A4FF", "Fibroblasts" = "#ABDDA4FF",  "TCRgdt" = "#336666","Macrophages" = "#4E79A7FF",
-              "Macrophages F480" = "#4E79A7FF", "Macrophages CD68" = "#5F9EA0", "Macrophages CD11b" = "#0072B2", "Neutrophils" = "#A0CBE8FF",  "T cell CD4" = "#B07AA1FF",
-              "T cell CD8" = "#FF9D9AFF", "Tregs" = "#CC6666", "Tumour" = "#704850FF", "Uncertain" = "#8C8C8C")
+              "Macrophages F480" = "#4E79A7FF", "Macrophages CD68" = "#5F9EA0", "Macrophages CD11b" = "#0072B2", "Neutrophils" = "#A0CBE8FF",  "T cell CD4" = "#B07AA1FF","Monocytes"= "#40E0D0",  "T cell CD8" = "#FF9D9AFF", "Tregs" = "#CC6666", "Tumour" = "#704850FF", "Uncertain" = "#8C8C8C")
 # "Fibroblasts Thy1.2" = "#74a892", cluster_cols = c( "#FFF4A4FF",  "#ABDDA4FF", "#618F75FF",  "#336666","Dendritic cells CD11c-" = "#FF6347"
 #                "#4E79A7FF", "#A0CBE8FF","#938ABBFF",  "#B07AA1FF",
 #                "#FF9D9AFF", "#CC6666",  "#704850FF",  "#8C8C8C", "#FFD700",   "#00FF7F",   "#8B4513",  "#FF6347",  "#40E0D0",   "#7FFF00",
@@ -1604,7 +1703,7 @@ plot.celltypeperc(celldata = celldata[!celldata$annotation %in% c("Tumour", "Unc
                   title = "Stacked_without_tumour")
 plot.celltypeperc(celldata = celldata[!celldata$annotation %in% c("Tumour",  "Fibroblasts", "Endothelium","Uncertain"),],
                   title = "Stacked_immune_cells")
-
+## not work
 plot.celltypeperc = function(celldata, title) {
   date = str_sub(gsub("-", "", Sys.Date()), -6, -1)
   directory = create.resultsdir(path = OUTPUT_PATH, name = "Stacked_barplots")
@@ -1632,19 +1731,19 @@ plot.celltypeperc = function(celldata, title) {
 plot.celltypeperc(celldata = celldata,title = "Stacked_metaclusters")
 plot.celltypeperc(celldata = celldata[!celldata$annotation %in% c("Tumour", "Uncertain"),],
                   title = "Stacked_without_tumour")
-plot.celltypeperc(celldata = celldata[!celldata$annotation %in% c("Tumour",  "Fibroblasts Thy1.2", "Fibroblasts aSMA", "Endothelium","Uncertain"),],
+plot.celltypeperc(celldata = celldata[!celldata$annotation %in% c("Tumour",  "Fibroblasts Thy1.2", "Fibroblasts aSMA", "Endothelium", "Epithelium","Uncertain"),],
                   title = "Stacked_immune_cells")
 ```
-
+# save plotstack image 
 ```{r}
-levels1 = c("T cell CD4", "T cell CD8", "Tregs", "TCRgdt","Neutrophils", "Macrophages","Dendritic cells", "Dendritic cells CD103", "Endothelium","Epithelium", "Fibroblasts Thy1.2","Fibroblasts aSMA","Tumour","Uncertain")
-levels2 = c("T cell CD4", "T cell CD8", "Tregs", "TCRgdt","Neutrophils", "Macrophages","Dendritic cells", "Endothelium","Epithelium", "Fibroblasts","Tumour","Uncertain")
+
+levels2 = c("T cell CD4", "T cell CD8", "Tregs","B cells", "Neutrophils", "Macrophages", "Monocytes", "Dendritic cells","Dendritic cells CD103", "Endothelium","Epithelium", "Fibroblasts","Tumour","Uncertain")
 plot.celltypeperc = function(celldata, title) {
   date = str_sub(gsub("-", "", Sys.Date()), -6, -1)
   #Proportion of cell types in tumour domain
   p = ggplot(celldata, 
              aes(x = factor(ExpGroup, levels = unique(ExpGroup)),
-                 fill = factor(annotation, levels = levels1))) +
+                 fill = factor(annotation, levels = levels2))) +
     geom_bar(position = "fill", colour = "black") +
     scale_y_continuous(labels = scales::percent) +
     scale_x_discrete(limits=c("WT","CCR2KO")) +
@@ -1667,7 +1766,7 @@ plot.celltypeperc(celldata = celldata, title = "Stacked_metaclusters")
 
 plot.celltypeperc(celldata = celldata[!celldata$annotation %in% c("Tumour", "Uncertain"),],
                   title = "Stacked_without_tumour")
-plot.celltypeperc(celldata = celldata[!celldata$annotation %in% c("Tumour", "Epithelium", "Fibroblasts", "Endothelium","Uncertain"),],
+plot.celltypeperc(celldata = celldata[!celldata$annotation %in% c("Tumour", "Epithelium", "Fibroblasts", "Endothelium","Uncertain","Epithelium"),],
                   title = "Stacked_immune_cells_annotation")
 
 
@@ -1730,931 +1829,4 @@ plot.celltypeperc3(celldata = celldata_macrophages,title = "Stacked_macrophages_
 
 
 
-
-
-# Calculate the percentage of cell types 
-```{r}
-## un calssifie Trge
-## need check with image , havent check 
-celldata$LAG3exp <- ifelse(celldata$MI_LAG3 >= 0.5, "LAG3+", "LAG3-") 
-celldata$Ki67exp <- ifelse(celldata$MI_Ki67 >= 0.5, "Ki67+", "Ki67-") 
-celldata$casp3exp <-ifelse(celldata$MI_casp3>=0.3,"casp3+","casp3-")
-celldata$PDL1exp <- ifelse(celldata$MI_PDL1 >= 0.15, "PDL1+", "PDL1-")
-celldata$CD24exp <- ifelse(celldata$MI_CD24 >= 0.2, "CD24+", "CD24-")
-celldata$pS6exp <- ifelse(celldata$MI_pS6 >= 0.2, "pS6+", "pS6-") 
-celldata$MHCIIexp <- ifelse(celldata$MI_MHCcII >= 0.25, "MHCII+", "MHCII-") 
-celldata$PD1exp <- ifelse(celldata$MI_PD1 >= 0.3, "PD1+", "PD1-") 
-celldata$Ki67exp <- ifelse(celldata$MI_Ki67 >= 0.5, "Ki67+", "Ki67-") 
-celldata$CD86exp <- ifelse(celldata$MI_CD86 >= 0.5, "CD86+", "CD86-") 
-celldata$CD80exp <- ifelse(celldata$MI_CD80 >= 0.5, "CD80+", "CD80-") 
-celldata$CD206exp <- ifelse(celldata$MI_CD206 >= 0.5, "CD206+", "CD206-") 
-celldata$PVRexp <- ifelse(celldata$MI_PVR >= 0.25, "PVR+", "PVR-") 
-celldata$TIM3exp <- ifelse(celldata$MI_TIM3 >= 0.3, "TIM3+", "TIM3-") 
-
-str(celldata)
-celldata$ExpGroup <- as.factor(celldata$ExpGroup)
-celldata$ROI_ID <- as.factor(celldata$ROI_ID)
-str(celldata)
-# Remove the unnamed column
-celldata <- celldata[, !colnames(celldata) == "X"]
-# Verify the column removal
-colnames(celldata)
-stat_241212_ROI = celldata %>%
- # group_by(ExpGroup,ROI_ID,MouseID) %>%
-  group_by(ExpGroup,MouseID,ROI_ID) %>%
-    dplyr::summarise(
-    totaln = n(),
-    Tumourn = sum(annotation=="Tumour"),
-    EPTumourn = sum(kinv25%in% c("20","26","27","28")),
-    Tcelln = sum(annotation %in% c("T cell CD4","T cell CD8","Tregs","TCRgdt")),
-    CD4n = sum(annotation=="T cell CD4"),
-    CD8n = sum(annotation=="T cell CD8"),
-    Tregn= sum(annotation=="Tregs"),
-    TCRgdtn=sum(annotation=="TCRgdt"),
-    Bcelln= sum(annotation=='B cells'),
-    Neutn = sum(annotation=="Neutrophils"),
-    Maccelln = sum(annotation =="Macrophages"),
-    Fibn = sum(annotation=="Fibroblasts"),
-    Endon=sum(annotation=="Endothelium"),
-    DCcelln = sum(annotation %in% c("Dendritic cells CD103","Dendritic cells")),#DCcelln means all DCs 
-    DCothern = sum(annotation=="Dendritic cells"), #DCn means DC others, here is a little bit confused, maybe change later, now to fit previous figure, 
-    cDC1n = sum(annotation=="Dendritic cells CD103"),
-    immunecellsn = sum(annotation %in% c("T cell CD4","T cell CD8","Dendritic cells","Tregs",'TCRgdt',"Neutrophils","Macrophages","B cells","Dendritic cells CD103")),
-    # T cell surface marker : PD1  TIM3  LAG3 Ki67 
-    PD1Tcelln = sum(PD1exp=="PD1+" & annotation %in% c("T cell CD4","T cell CD8","Tregs","TCRgdt")),
-    PD1CD4Tcelln = sum(PD1exp=="PD1+" & annotation=="T cell CD4"),
-    PD1CD8Tcelln = sum(PD1exp=="PD1+" & annotation=="T cell CD8"),
-    PD1Tregn = sum(PD1exp=="PD1+" & annotation=="Tregs"),
-    PD1Bcelln= sum(PD1exp=="PD1+" & annotation=="B cells"),
-    
-   
-    LAG3Tcelln = sum(LAG3exp=="LAG3+" & annotation %in% c("T cell CD4","T cell CD8","Tregs","TCRgdt")),
-    LAG3CD4Tcelln = sum(LAG3exp=="LAG3+" & annotation=="T cell CD4"),
-    LAG3CD8Tcelln = sum(LAG3exp=="LAG3+" & annotation=="T cell CD8"),
-    LAG3Tregn = sum(LAG3exp=="LAG3+" & annotation=="Tregs"),
-    LAG3Bcelln= sum(LAG3exp=="LAG3+" & annotation=="B cells"),
-    
-    TIM3Tcelln = sum(TIM3exp=="TIM3+" & annotation %in% c("T cell CD4","T cell CD8","Tregs","TCRgdt")),
-    TIM3CD4Tcelln = sum(TIM3exp=="TIM3+" & annotation=="T cell CD4"),
-    TIM3CD8Tcelln = sum(TIM3exp=="TIM3+" & annotation=="T cell CD8"),
-    TIM3Tregn = sum(TIM3exp=="TIM3+" & annotation=="Tregs"),
-    TIM3Bcelln= sum(TIM3exp=="TIM3+" & annotation=="B cells"),
-    
-    Ki67Tcelln = sum(Ki67exp=="Ki67+" & annotation %in% c("T cell CD4","T cell CD8","Tregs","TCRgdt")),
-    Ki67CD4Tcelln = sum(Ki67exp=="Ki67+" & annotation=="T cell CD4"),
-    Ki67CD8Tcelln = sum(Ki67exp=="Ki67+" & annotation=="T cell CD8"),
-    Ki67Tregn = sum(Ki67exp=="Ki67+" & annotation=="Tregs"),
-    Ki67Bcelln= sum(Ki67exp=="Ki67+" & annotation=="B cells"),
-    
-    Ki67Endon= sum(Ki67exp=="Ki67+" & annotation=="Endothelium"),
-    # CD80 CD86 on Neutrophils , PD1 PDL1 TIM3 LAG3 Ki67 MHCII
-     
-    #MHCII, CD86, CD80  PD1 PDL1 MHCII PVR on myeloid cells
-    CD86Maccelln = sum(CD86exp=="CD86+" & annotation=="Macrophages"),
-    CD206Maccelln = sum(CD206exp=="CD206+" & annotation=="Macrophages"),
-    CD86DCcelln = sum(CD86exp=="CD86+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    CD86DCothern = sum(CD86exp=="CD86+" & annotation=="Dendritic cells"),
-    CD86cDC1n = sum(CD86exp=="CD86+" & annotation=="Dendritic cells CD103"),
-    
-    CD80Maccelln = sum(CD80exp=="CD80+" & annotation=="Macrophages"),
-    CD80DCcelln = sum(CD80exp=="CD80+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    CD80DCothern = sum(CD80exp=="CD80+" & annotation=="Dendritic cells"),
-    CD80cDC1n = sum(CD80exp=="CD80+" & annotation=="Dendritic cells CD103"),
-    
-    pS6Maccelln = sum(pS6exp=="pS6+" & annotation=="Macrophages"),
-    pS6DCcelln = sum(pS6exp=="pS6+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    pS6DCothern = sum(pS6exp=="pS6+" & annotation=="Dendritic cells"),
-    pS6cDC1n = sum(pS6exp=="pS6+" & annotation=="Dendritic cells CD103"),
-    
-    
-    MHCIIMaccelln = sum(MHCIIexp=="MHCII+" & annotation=="Macrophages"),
-
-    MHCIIDCcelln = sum(MHCIIexp=="MHCII+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    MHCIIDCothern = sum(MHCIIexp=="MHCII+" & annotation=="Dendritic cells"),
-    MHCIIcDC1n = sum(MHCIIexp=="MHCII+" & annotation=="Dendritic cells CD103"),
-   
-    PDL1Maccelln = sum(PDL1exp=="PDL1+" & annotation=="Macrophages"),
-    PDL1DCcelln = sum(PDL1exp=="PDL1+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    PDL1DCothern = sum(PDL1exp=="PDL1+" & annotation=="Dendritic cells"),
-    PDL1cDC1n = sum(PDL1exp=="PDL1+" & annotation=="Dendritic cells CD103"),
-    
-    PVRMaccelln = sum(PVRexp=="PVR+" & annotation=="Macrophages"),
-    PVRDCcelln = sum(PVRexp=="PVR+" & annotation %in% c("Dendritic cells","Dendritic cells CD103")),
-    PVRDCothern = sum(PVRexp=="PVR+" & annotation=="Dendritic cells"),
-    PVRcDC1n = sum(PVRexp=="PVR+" & annotation=="Dendritic cells CD103"),
-    
-
-    # PDL1  casp3  Ki67  PVR  pS6 on tumour 
-    
-    Casp3Tumourn = sum(casp3exp=="casp3+" & annotation=="Tumour"),
-    Ki67Tumourn = sum(Ki67exp=="Ki67+" & annotation=="Tumour"),
-    PVRTumourn = sum(PVRexp=="PVR+" & annotation=="Tumour"),
-    pS6Tumourn = sum(pS6exp=="pS6+" & annotation=="Tumour"),
-    PDL1Tumourn = sum(PDL1exp=="PDL1+" & annotation=="Tumour"),
-    CD24Tumourn = sum(CD24exp=="CD24+" & annotation=="Tumour"),
-    
-    Casp3EPTumourn = sum(casp3exp=="casp3+" & kinv25%in% c("20","26","27","28")),
-    Ki67EPTumourn = sum(Ki67exp=="Ki67+" & kinv25%in% c("20","26","27","28")),
-    PVREPTumourn = sum(PVRexp=="PVR+" & kinv25%in% c("20","26","27","28")),
-    pS6EPTumourn = sum(pS6exp=="pS6+" & kinv25%in% c("20","26","27","28")),
-    PDL1EPTumourn = sum(PDL1exp=="PDL1+" & kinv25%in% c("20","26","27","28")),
-    CD24EPTumourn = sum(CD24exp=="CD24+" & kinv25%in% c("20","26","27","28")),
-    
-    
-    
-    # PD1 , CD80 ,CD86 on Neutrophils 
-    PD1Neutn =sum(PD1exp=="PD1+"& annotation=="Neutrophils"),
-    pS6Neutn =sum(pS6exp=="pS6+"& annotation=="Neutrophils"),
-    PDL1Neutn =sum(PDL1exp=="PDL1+"& annotation=="Neutrophils"),
-    CD80Neutn =sum(CD80exp=="CD80+"& annotation=="Neutrophils"),
-    CD86Neutn =sum(CD86exp=="CD86+"& annotation=="Neutrophils")
-    # CollagenI ,Vimentin  on Fibroblasts ?
-
-    )%>%
- # group_by(MouseID, ROI_ID, ExpGroup) %>%
-  group_by(ExpGroup,MouseID,ROI_ID) %>%
-  mutate(          
-         Tcelln_immunecellsn = Tcelln/immunecellsn,
-         Bcelln_immunecells = Bcelln/immunecellsn,
-         Neutn_immunecells = Neutn/immunecellsn,
-         Maccelln_immunecells= Maccelln/immunecellsn, 
-         DCcelln_immunecells= DCcelln/immunecellsn,
-         Fibn_immunecells = Fibn/immunecellsn,
-
-                    # Each sub cell type %  in each cell type 
-                    CD4n_Tcelln = CD4n/Tcelln,
-                    CD8n_Tcelln = CD8n/Tcelln,
-                    Tregn_Tcelln = Tregn/Tcelln,
-                    TCRgdtn_Tcelln = TCRgdtn/Tcelln,
-                    CD4n_immunecellsn = CD4n/immunecellsn,
-                    CD8n_immunecellsn = CD8n/immunecellsn,
-                    Tregn_immunecellsn = Tregn/immunecellsn,
-         
-                   
-                    DCothern_DCcelln = DCothern/DCcelln,
-                    cDC1n_DCcelln = cDC1n/DCcelln,
-         
-                    Maccelln_immunecellsn = Maccelln/immunecellsn,
-                    DCothern_immunecellsn = DCothern/immunecellsn,
-                    cDC1n_immunecellsn = cDC1n/immunecellsn,
-                    
-                    # Marker expression relative to cell type
-                    PD1Tcelln_Tcelln = PD1Tcelln/Tcelln,
-                    PD1CD8Tcelln_CD8n =  PD1CD8Tcelln/CD8n,
-                    PD1CD4Tcelln_CD4n = PD1CD4Tcelln/CD4n,
-                    PD1Tregn_Tregn = PD1Tregn/Tregn,
-                 
-                    pS6DCothern_DCothern = pS6DCothern/DCothern,
-                    CD86DCothern_DCothern = CD86DCothern/DCothern,
-                    CD80DCothern_DCothern = CD80DCothern/DCothern,
-                    MHCIIDCothern_DCothern = MHCIIDCothern/DCothern,
-                    PDL1DCothern_DCothern = PDL1DCothern/DCothern,
-                    PVRDCothern_DCothern = PVRDCothern/DCothern,
-
-                    CD86DCcelln_DCcelln = CD86DCcelln/DCcelln,
-                    CD80DCcelln_DCcelln = CD80DCcelln/DCcelln,
-                    MHCIIDCcelln_DCcelln = MHCIIDCcelln/DCcelln,
-                    PDL1DCcelln_DCcelln = PDL1DCcelln/DCcelln,
-                    PVRDCcelln_DCcelln = PVRDCcelln/DCcelln,
-                    pS6DCcelln_DCcelln = pS6DCcelln/DCcelln,
-         
-                    CD86cDC1n_cDC1n = CD86cDC1n/cDC1n,
-                    CD80cDC1n_cDC1n = CD80cDC1n/cDC1n,
-                    MHCIIcDC1n_cDC1n = MHCIIcDC1n/cDC1n,
-                    PDL1cDC1n_cDC1n = PDL1cDC1n/cDC1n,
-                    PVRcDC1n_cDC1n = PVRcDC1n/cDC1n,
-                    pS6cDC1n_cDC1n = pS6cDC1n/cDC1n,
-         
-                    MHCIIMaccelln_Maccelln =MHCIIMaccelln/Maccelln,       
-                    CD86Maccelln_Maccelln =CD86Maccelln/Maccelln,    
-                    CD206Maccelln_Maccelln =CD206Maccelln/Maccelln,    
-                    CD80Maccelln_Maccelln =CD80Maccelln/Maccelln,            
-                    PDL1Maccelln_Maccelln = PDL1Maccelln/Maccelln,            
-                    PVRMaccelln_Maccelln =PVRMaccelln/Maccelln,  
-                    pS6Maccelln_Maccelln =pS6Maccelln/Maccelln,    
-                    
-         
-                    EPTumourn_Tumourn = EPTumourn/Tumourn,
-                    Casp3Tumourn_Tumourn = Casp3Tumourn/Tumourn,
-                    Ki67Tumourn_Tumourn =  Ki67Tumourn/Tumourn,
-                    PDL1Tumourn_Tumourn = PDL1Tumourn/Tumourn,
-                    PVRTumourn_Tumourn =  PVRTumourn/Tumourn,
-                    pS6Tumourn_Tumourn =  pS6Tumourn/Tumourn,
-                    Casp3EPTumourn_EPTumourn = Casp3EPTumourn/EPTumourn,
-                    Ki67EPTumourn_EPTumourn =  Ki67EPTumourn/EPTumourn,
-                    PDL1EPTumourn_EPTumourn = PDL1EPTumourn/EPTumourn,
-                    PVREPTumourn_EPTumourn =  PVREPTumourn/EPTumourn,
-                    pS6EPTumourn_EPTumourn =  pS6EPTumourn/EPTumourn,
-               
-                    Fibn_totaln =Fibn/totaln,
-                    PD1Neutn_Neutn =PD1Neutn/Neutn,
-                    PDL1Neutn_Neutn =PDL1Neutn/Neutn,
-                    CD80Neutn_Neutn =CD80Neutn/Neutn,
-                    CD86Neutn_Neutn =CD86Neutn/Neutn,
-                    pS6Neutn_Neutn =pS6Neutn/Neutn
-         
-                           ) %>%
-  ungroup()
-plot.boxplot = function(celldata, factor, comparisons) {
-  factor = ensym(factor)
-  ggplot(celldata, aes(x = ExpGroup, y = !!factor, colour = ExpGroup)) +
-    geom_boxplot() + geom_dotplot(aes(fill = MouseID),method = "histodot", binaxis='y',
-                                  stackdir='center', dotsize = 0.8) +
-     #scale_y_log10() +
-     scale_y_continuous(labels = scales::percent) +
-    scale_x_discrete(limits=c("WT", "CCR2KO")) +
-    stat_compare_means(comparisons = comparisons,method = "wilcox.test", label = "p.signif",size=6,fontface="bold") +
-    theme_classic() + ggtitle(factor) +
-    theme(plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
-          plot.background = element_blank(),
-          axis.title = element_blank(),
-          axis.text.y = element_text(size = 14, colour = "black"),
-          axis.text.x = element_text(size = 17, face = "bold", colour = "black"), 
-          legend.position = "none",
-          legend.title = element_blank(),
-          legend.text = element_text(size = 10))
-  date <- Sys.Date()
-  ggsave(filename = paste0(date, "Boxplot_", factor, ".jpeg"),
-         path = file.path(OUTPUT_PATH, "Boxplots/Boxplots_percentage"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-}
-##plot boxplot according to the factor   # title is legend in image, filename is factor
-my_comparisons=list(c("WT","CCR2KO"))
-      
-     
-
-
-
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1Maccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRMaccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Casp3Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Ki67Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRTumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Casp3Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Ki67Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRTumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6Tumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "EPTumourn_Tumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Casp3EPTumourn_EPTumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Ki67EPTumourn_EPTumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1EPTumourn_EPTumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVREPTumourn_EPTumourn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6EPTumourn_EPTumourn",comparisons = my_comparisons)
-
-plot.boxplot(celldata = stat_241212_ROI, factor = "Tcelln_immunecellsn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Bcelln_immunecells",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Neutn_immunecells",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Maccelln_immunecells",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "DCcelln_immunecells",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD4n_Tcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD8n_Tcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Tregn_Tcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "TCRgdtn_Tcelln",comparisons = my_comparisons)
-
-plot.boxplot(celldata = stat_241212_ROI, factor = "DCothern_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "cDC1n_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PD1Tcelln_Tcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PD1CD8Tcelln_CD8n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PD1CD4Tcelln_CD4n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PD1Tregn_Tregn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1Neutn_Neutn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD80Neutn_Neutn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6Neutn_Neutn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD86Neutn_Neutn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PD1Neutn_Neutn",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD86DCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6DCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD80DCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "MHCIIDCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1DCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRDCothern_DCothern",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD86DCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6DCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD80DCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "MHCIIDCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1DCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRDCcelln_DCcelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD86cDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6cDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD80cDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "MHCIIcDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PDL1cDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "PVRcDC1n_cDC1n",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "MHCIIMaccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD86Maccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "pS6Maccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "CD80Maccelln_Maccelln",comparisons = my_comparisons)
-plot.boxplot(celldata = stat_241212_ROI, factor = "Fibn_totaln",comparisons = my_comparisons)
-
-
-
-```
-
-
-output_file = paste0(OUTPUT_PATH, date, "_celldata.csv")
-output_file
-write.csv(celldata, file = output_file, row.names = F) 
-
-
-##
-date <- Sys.Date()
-output_file = paste0(OUTPUT_PATH, "_stat_241105_ROI.csv")
-output_file
-write.csv(stat_241105_ROI, file = output_file, row.names = F) 
-
-############################################################################################################################################################
-
-
-## plot marker expression (TCellMarkers)  on T-umap 
-```{r }
-for (i in TCellMarkers){
-  marker = str_remove(i, "MI_")
-  p = ggplot(TCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("T cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,1))
-  ggsave(filename = paste0("UMAP_T_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "TCellUMAP"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-
-```
-
-
-## plot marker expression (MacDendCellColumns)  on Myeloid cells 
-```{r }
-p = ggplot(MacDendCD,
-           aes(x=umap1, y=umap2, colour = as.factor(anncluster))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP MacDend cells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Cluster")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-
-ggsave(filename = "UMAP_MacDend_cell_cluster.jpeg",
-       path = file.path(OUTPUT_PATH, "MacDendUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-## plot by ExpGroup    No function in advance here, so just rewrite code  
-p = ggplot(MacDendCD,
-           aes(x=umap1, y=umap2, colour = as.factor(ExpGroup))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP MacDendcells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Experimental group")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-ggsave(filename = "UMAP_MacDend_cell_ExpGroup.jpeg",
-       path = file.path(OUTPUT_PATH, "MacDendUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-
-for (i in MacDendCellColumns){
-  marker = str_remove(i, "MI_")
-  p = ggplot(MacDendCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("MacDend cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,3))
-  ggsave(filename = paste0("UMAP_MacDend_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "MacDendUMAP"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-```
-
-
-## plot marker expression (MacCellColumns)  on Mac cells 
-```{r }
-
-p = ggplot(MacCD,
-           aes(x=umap1, y=umap2, colour = as.factor(anncluster))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP Mac cells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Cluster")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-
-ggsave(filename = "UMAP_Mac_cell_cluster.jpeg",
-       path = file.path(OUTPUT_PATH, "MacUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-## plot by ExpGroup    No function in advance here, so just rewrite code  
-p = ggplot(MacCD,
-           aes(x=umap1, y=umap2, colour = as.factor(ExpGroup))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP Maccells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Experimental group")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-ggsave(filename = "UMAP_Mac_cell_ExpGroup.jpeg",
-       path = file.path(OUTPUT_PATH, "MacUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-
-for (i in MacCellColumns){
-  marker = str_remove(i, "MI_")
-  p = ggplot(MacCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("Mac cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,2))
-  ggsave(filename = paste0("UMAP_Mac_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "MacUMAP"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-
-for (i in TUMColumns){
-  marker = str_remove(i, "MI_")
-  p = ggplot(TUMCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("TUM cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,2))
-  ggsave(filename = paste0("UMAP_TUM_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "UMAP/TUMCD_markers"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-```
-
-
-
-
-## plot marker expression (FibEndoColumns)  on Fibroblasts and Endothelial
-```{r }
-
-p = ggplot(FibEndoCD,
-           aes(x=umap1, y=umap2, colour = as.factor(anncluster))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP FibEndo cells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Cluster")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-
-ggsave(filename = "UMAP_FibEndo_cell_cluster.jpeg",
-       path = file.path(OUTPUT_PATH, "FibEndoUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-## plot by ExpGroup    No function in advance here, so just rewrite code  
-p = ggplot(FibEndoCD,
-           aes(x=umap1, y=umap2, colour = as.factor(ExpGroup))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP FibEndocells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Experimental group")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-ggsave(filename = "UMAP_FibEndo_cell_ExpGroup.jpeg",
-       path = file.path(OUTPUT_PATH, "FibEndoUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-
-for (i in FibEndoColumns){
-  marker = str_remove(i, "MI_")
-  p = ggplot(FibEndoCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("FibEndo cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,1))
-  ggsave(filename = paste0("UMAP_FibEndo_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "FibEndoUMAP"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-```
-
-
-
-## plot marker expression (MacDebdFibTumNeuColumns)  on Myeloid cells 
-```{r }
-MacFibTumNeuCD_filtered <- MacFibTumNeuCD
-#MacFibTumNeuCD_filtered <- MacFibTumNeuCD_filtered[MacFibTumNeuCD_filtered$umap2 < 10,]
-MacFibTumNeuCD_filtered <- MacFibTumNeuCD_filtered[MacFibTumNeuCD_filtered$umap1 >-10,]
-p = ggplot(MacFibTumNeuCD_filtered,
-           aes(x=umap1, y=umap2, colour = as.factor(anncluster))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP MacFibTumNeuCD cells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Cluster")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 8),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = mycolors)
-
-ggsave(filename = "UMAP_MacFibTumNeuCD_cluster.jpeg",
-       path = file.path(OUTPUT_PATH, "241101_MacFibTumNeuCDUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-
-```
-
-## plot by ExpGroup    No function in advance here, so just rewrite code  
-```{r}
-p = ggplot(MacFibTumNeuCD_filtered,
-           aes(x=umap1, y=umap2, colour = as.factor(ExpGroup))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP MacFibTumNeuCD") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Experimental group")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = mycolors)
-ggsave(filename = "UMAP_MacFibTumNeuCD_ExpGroup.jpeg",
-       path = file.path(OUTPUT_PATH, "241101_MacFibTumNeuCDUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-colours1 =  c( "Dendritic cells CD103" = "#FF9933",
-             "Fibroblasts" = "#ABDDA4FF",
-              "Macrophages" = "#4E79A7FF", "Neutrophils" = "#A0CBE8FF", "Dendritic cells"= "#CC6666", "Tumour" = "#704850FF", "Uncertain" = "#8C8C8C")
-p = ggplot(MacFibTumNeuCD_filtered,
-           aes(x=umap1, y=umap2, colour = as.factor(annotation))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP MacFibTumNeuCD cells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Annotation")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = colours1)
-
-ggsave(filename = "UMAP_MacFibTumNeuCD_annotation.jpeg",
-       path = file.path(OUTPUT_PATH, "241101_MacFibTumNeuCDUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-for (i in MacFibTumNeuColumns){
-  marker = str_remove(i, "MI_")
-  p = ggplot(MacFibTumNeuCD_filtered,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("MacFibTumNeuCD cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,3))
-  ggsave(filename = paste0("UMAP_MacFibTumNeuCD_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "241101_MacFibTumNeuCDUMAP"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-```
-
-
-
-
-
-## plot marker expression (TumourColumns)  on Tumour cells
-```{r}
-p = ggplot(TUMCD,
-           aes(x=umap1, y=umap2, colour = as.factor(anncluster))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP TUM cells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Cluster")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-
-ggsave(filename = "UMAP_TUM_cell_cluster.jpeg",
-       path = file.path(OUTPUT_PATH, "TUMUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-## plot by ExpGroup    No function in advance here, so just rewrite code  
-p = ggplot(TUMCD,
-           aes(x=umap1, y=umap2, colour = as.factor(ExpGroup))) + 
-  geom_point(size = 0.3) + ggtitle("U-MAP TUMcells") + 
-  guides(colour = guide_legend(override.aes = list(size=5), title = "Experimental group")) +
-  theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-  theme(plot.background = element_blank(),
-        axis.title = element_text(size = 15),
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17, face = "bold"),
-        plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-        panel.grid = element_blank(),
-        #axis.text = element_blank(),
-        axis.ticks = element_blank()) +
-  scale_color_manual(values = cluster_cols)
-ggsave(filename = "UMAP_TUM_cell_ExpGroup.jpeg",
-       path = file.path(OUTPUT_PATH, "TUMUMAP"), bg = "white",
-       width = 2100, height = 1700, units = "px")
-
-
-for (i in TUMColumns){
-  marker = str_remove(i, "MI_")
-  p = ggplot(TUMCD,
-             aes(x=umap1, y=umap2, colour = get(i))) + 
-    geom_point(size = 0.3) + ggtitle(paste0("TUM cell ", marker, " expression")) + 
-    theme_classic() + labs(x = "UMAP 1", y = "UMAP 2") +
-    theme(plot.background = element_blank(),
-          axis.title = element_text(size = 15),
-          legend.text = element_text(size = 15),
-          legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 25, face = "bold"),
-          panel.grid = element_blank(),
-          #axis.text = element_blank(),
-          axis.ticks = element_blank()) +
-    scale_color_distiller(palette = "Spectral", limits = c(0,1))
-  ggsave(filename = paste0("UMAP_TUM_cell_", marker, "_expression.jpeg"),
-         path = file.path(OUTPUT_PATH, "TUMUMAP"), bg = "white",
-         width = 2100, height = 1700, units = "px")
-  print(p)
-}
-```
-
-# cross-checking in ImageJ
-
-```{r clusteroverlay function}
-# Get cluster overlay ----------------------------------------------------------
-# Description : For each of the given 'levels' in 'factor', binary images are
-#               created for every ROI where the locations of cells in this level
-#               are plotted as a white dot with size 'size'.
-# --- parameters ---
-# celldata  --> [dataframe] a dataframe with mean intensity data by marker
-# ROIdata   --> [dataframe] a dataframe with the filename of each ROI and its
-#               height and width in pixels
-# factor    --> [string] name of a column of 'dataframe' that acts as a factor
-# levels    --> [vector] a vector with levels of factor; cells belonging to
-#               one of these levels are included in the plot
-# size      --> [numeric] a number representing the size of the dots
-# << Output >>  Binary images for each ROI for each level in factor 
-plot.clusteroverlay = function(celldata, ROIdata, factor, levels, size = 1){
-  rootdir = create.resultsdir(path = OUTPUT_PATH, name = "ImageJ_Overlay")
-  
-  # Loop through ROIs
-  for(i in 1:nrow(ROIdata)){
-    # Create a directory for each ROI
-    directory = file.path(rootdir, ROIdata[i,1])
-    if (!dir.exists(directory)) dir.create(directory)
-    
-    for(k in 1:length(levels)){
-      # Select the cells that belong to this cluster
-      celldataTHR = celldata[which(celldata$filename == ROIdata$filename[i] &
-                                     celldata[,factor] == levels[k]),
-                             c(factor, "Location_Center_X", "Location_Center_Y")]
-      
-      xwidth = ROIdata$width[i]
-      ylength = ROIdata$height[i]
-      
-      # Plot the cell locations
-      p = ggplot(celldataTHR, aes(x=Location_Center_X, y=-Location_Center_Y)) + 
-        geom_point(color = "white", size = size) +
-        coord_cartesian(xlim = c(1, xwidth), ylim = c(-ylength, 0)) +
-        theme_set(theme_cowplot()) + theme_void() +
-        theme(plot.background=element_rect(fill = "grey"),
-              panel.background = element_rect(fill = 'black')) +
-        scale_x_continuous(expand=c(0,0)) +
-        scale_y_continuous(expand=c(0,0))
-      
-      filename = paste0(factor, "_cluster_", levels[k], ".png")
-      ggsave(plot = p, device = png, width = xwidth, height = ylength,
-             units = "px", limitsize = FALSE, filename = filename,
-             path = directory)
-    }
-  }
-}
-```
-
-```{r}
-plot.clusteroverlay(celldata = celldata, ROIdata = imagemetadata,
-                    factor = "anncluster", levels = unique(celldata$anncluster))
-plot.clusteroverlay(celldata = celldata, ROIdata = imagemetadata,
-                    factor = "k20", levels = unique(celldata$k20))
-```
-
-
-## Draw ROIs
-
-Plot each cell by x,y coordinate and color according to e.g. annotation
-
-```{r draw-ROI functions, include=FALSE}
-# Plot ROI ---------------------------------------------------------------------
-# Description : Creates an ROI plot by plotting the cells of the ROI on an x-y
-#               plane according to their coordinates, and colours the cells
-#               according to the levels of 'factor'.
-# ---Parameters---
-# celldata    --> [dataframe] a dataframe with cells annotated by a factor.
-# ROIdata     --> [dataframe] a dataframe with the filename of each ROI and its
-#                 height and width in pixels
-# filename    --> [character] a level of the factor 'filename' in celldata
-# factor      --> [string] the name of a column of celldata that acts as a factor
-# splitByROI  --> [boolean] if T the ROI plot is saved in a subfolders named after the filename
-# << Output >>    [image] The generated ROI plot
-plot.ROI = function(celldata, ROIdata, filename, factor, splitByROI = F) {
-  factor = sym(factor)
-  celldatasubset = celldata[celldata$filename == filename,]
-  p = ggplot(celldatasubset, aes(x = Location_Center_X, y = -Location_Center_Y,
-                                 color = factor(!!factor))) +
-    geom_point(size = .2) + theme_classic() +ggtitle(filename) +
-    theme(axis.line = element_blank(), axis.text.x=element_blank(),
-          axis.text.y = element_blank(), axis.ticks=element_blank(),
-          axis.title.x = element_blank(), axis.title.y=element_blank(),
-          legend.title = element_blank(), legend.text = element_text(size = 8),
-          panel.background = element_blank(), panel.grid.major=element_blank(),
-          panel.grid.minor = element_blank(), strip.text = element_text(size = 8),
-          strip.background = element_rect(), panel.spacing = unit(0, "mm"),
-          plot.background = element_blank()) +
-    guides(colour = guide_legend(override.aes = list(size=5)))
-  print(p)
-  metanr = grep(filename, ROIdata$filename)
-  directory = create.resultsdir(path = OUTPUT_PATH, name = "Domain")
-  name = paste0(filename, ".jpeg")
-  
-  if(splitByROI){
-    directory = file.path(directory, filename)
-    name = paste0(factor, "_ROI.jpeg")
-    if (!dir.exists(directory)) dir.create(directory)
-  }
-
-  ggsave(plot = p, device = "jpeg", bg = "white", dpi = 300, units = "px",
-         width = ROIdata$width[metanr], height = ROIdata$height[metanr],
-         path = directory, filename = name)
-}
-```
-
-```{r}
-sapply(X = unique(celldata$filename), FUN = plot.ROI, celldata = celldata, 
-       splitByROI = T, ROIdata = imagemetadata, factor = "annotation")
-```
-
-## xiayu change domain code for running
-```{r}
-plot.ROI <- function(celldata, ROIdata, filename, factor, splitByROI = F) {
-  # Subset the celldata for the specific filename
-  celldatasubset = celldata[celldata$filename == filename, ]
-
-  # Check if the subset is empty
-  if (nrow(celldatasubset) == 0) {
-    message(paste("No data found for filename:", filename))
-    return(NULL)
-  }
-
-  # Create the plot
-  p = ggplot(celldatasubset, aes(x = Location_Center_X, y = -Location_Center_Y, color = factor(celldatasubset[[factor]]))) +
-    geom_point(size = .2) + 
-    theme_classic() +
-    theme(
-      axis.line = element_blank(), 
-      axis.text.x = element_blank(),
-      axis.text.y = element_blank(), 
-      axis.ticks = element_blank(),
-      axis.title.x = element_blank(), 
-      axis.title.y = element_blank(),
-      legend.title = element_blank(), 
-      legend.text = element_text(size = 8),
-      panel.background = element_blank(), 
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(), 
-      strip.text = element_text(size = 8),
-      strip.background = element_rect(), 
-      panel.spacing = unit(0, "mm"),
-      plot.background = element_blank()
-    ) +
-    guides(colour = guide_legend(override.aes = list(size = 5)))
-  
-  print(p)
-  
-  # Find matching metadata row based on filename
-  metanr = grep(filename, ROIdata$filename)
-
-  if (length(metanr) == 0) {
-    message(paste("No matching metadata for filename:", filename))
-    return(NULL)
-  }
-
-  # Create the output directory
-  directory = create.resultsdir(path = OUTPUT_PATH, name = "Domain")
-  
-  # Define the output filename
-  name = paste0(filename, ".jpeg")
-
-  if (splitByROI) {
-    directory = file.path(directory, filename)
-    name = paste0(factor, "_ROI.jpeg")
-    
-    # Create directory if it doesn't exist
-    if (!dir.exists(directory)) {
-      dir.create(directory, recursive = TRUE)
-    }
-  }
-
-  # Save the plot
-  ggsave(plot = p, device = "jpeg", bg = "white", dpi = 300, units = "px",
-         width = ROIdata$width[metanr], height = ROIdata$height[metanr],
-         path = directory, filename = name)
-}
-
-# Example usage with sapply
-sapply(X = unique(celldata$filename), FUN = function(filename) {
-  plot.ROI(celldata = celldata, ROIdata = imagemetadata, filename = filename, factor = "anncluster", splitByROI = TRUE)
-})
-
-
-```
 
