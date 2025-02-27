@@ -1,0 +1,71 @@
+---
+title: "250226_lmn"
+author: "Xiaofei YU"
+date: "2025-02-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(lme4)
+BASE = "/mnt/Data1/groupfebe/runs/Xiaofei/CCR2_LUNG"
+
+# Name of input and output directories:
+INPUT_PATH = file.path(BASE, "Results/Cellperc_output/")
+OUTPUT_PATH = file.path(BASE, "Results/Cellperc_output/")
+
+# Load celldata excluding tSNE coordinates  /load sampled celldata with tSNE coordinates. 
+# celldata = read.csv(paste0(INPUT_PATH, "/250227celldata.csv"))
+# unique(celldata$annotation)
+# unique(celldata$ExpGroup)
+stat_250226_Tumourdomain<-read.csv(paste0(INPUT_PATH,"stat_250226_Tumourdomain.csv"))
+# stat_250226_Interfacedomain<-read.csv(paste0(INPUT_PATH,"stat_250226_Interfacedomain.csv"))
+# stat_250226_Normaldomain<-read.csv(paste0(INPUT_PATH,"stat_250226_Normaldomain.csv"))
+# stat_250226_ROI<-read.csv(paste0(INPUT_PATH,"stat_250226_ROI.csv"))
+```
+# linear mix model for those cell distribution that has difference . 
+```{r}
+colnames(stat_250226_Tumourdomain)
+str(stat_250226_Tumourdomain)
+stat_250226_Tumourdomain$MouseID <- as.factor(stat_250226_Tumourdomain$MouseID)
+stat_250226_Tumourdomain$ExpGroup <- as.factor(stat_250226_Tumourdomain$ExpGroup)
+### The code not use, always cause R abort because of few data.
+model <- lmer(IMn_Maccelln ~ ExpGroup + (1 | MouseID) , data = stat_250226_Tumourdomain)
+summary(model)
+model <- lm(IMn_Maccelln ~ ExpGroup, data = stat_250226_Tumourdomain)
+summary(model)
+model <- lm(IMn_Maccelln ~ ExpGroup + MouseID, data = stat_250226_Tumourdomain)
+summary(model)
+
+
+## The code will be use for analysis 
+library(glmmTMB)
+model <- glmmTMB(IMn_Maccelln ~ ExpGroup + (1 | MouseID), data = stat_250226_Tumourdomain)
+summary(model)
+model <- glmmTMB(AMn_Maccelln ~ ExpGroup + (1 | MouseID), data = stat_250226_Tumourdomain)
+summary(model)
+model <- glmmTMB(CD8n_Tcelln ~ ExpGroup + (1 | MouseID), data = stat_250226_Tumourdomain)
+summary(model)
+model <- glmmTMB(Tregn_Tcelln ~ ExpGroup + (1 | MouseID), data = stat_250226_Tumourdomain)
+summary(model)
+##  make a new table include the real P value 
+column_names <- c("IMn_Maccelln","AMn_Maccelln","CD8n_Tcelln","Tregn_Tcelln")
+p_values <- data.frame()
+for (col in column_names) {
+  formula <- as.formula(paste(col, "~ ExpGroup + (1 | MouseID)"))
+  model <- glmmTMB(formula, data = stat_250226_Tumourdomain)
+  model_summary <- summary(model)
+  p_value <- model_summary$coefficients$cond["ExpGroupWT", "Pr(>|z|)"]
+  p_values <- rbind(p_values, data.frame(Column = col, p_value = p_value, p_less_than_0.05 = ifelse(p_value < 0.05, "Yes", "No")))
+}
+
+stat_250226_Tumourdomain <- merge(stat_250226_Tumourdomain, p_values, by.x = "IMn_Maccelln", by.y = "Column", all.x = TRUE)
+p_values_significant <- p_values[p_values$p_value < 0.05, ]
+print(p_values_significant)
+
+
+
+
+
+
+```
+
