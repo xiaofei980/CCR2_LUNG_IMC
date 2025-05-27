@@ -1,0 +1,361 @@
+---
+title: "newsegmented domain align"
+author: "Xiaofei YU"
+date: "2025-04-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#global environment
+```{r}
+library(tiff)
+library(dplyr)
+library(stringr)
+library(purrr)
+library(tiff)
+library(dplyr)
+
+```
+
+# read mask -->32566e
+```{r}
+normal_mask <- readTIFF("/mnt/Data1/groupfebe/runs/Data/XIAYU/CCR2_LUNG/results/segmentation/BRAC3256_6e_WT_ROI_001_1.txt_crop1/roi_brac3256_6e_wt_roi_001_1_crop1/normal_minus_interface_domain.tiff")
+tumor_mask <- readTIFF("/mnt/Data1/groupfebe/runs/Data/XIAYU/CCR2_LUNG/results/segmentation/BRAC3256_6e_WT_ROI_001_1.txt_crop1/roi_brac3256_6e_wt_roi_001_1_crop1/tumour_minus_interface_domain.tiff")
+interface_mask <- readTIFF("/mnt/Data1/groupfebe/runs/Data/XIAYU/CCR2_LUNG/results/segmentation/BRAC3256_6e_WT_ROI_001_1.txt_crop1/roi_brac3256_6e_wt_roi_001_1_crop1/interface_domain.tiff")
+```
+
+#
+```{r}
+# 图像尺寸
+img_height <- dim(normal_mask)[1]
+img_width <- dim(normal_mask)[2]
+unique(celldata$filename)
+celldata_3310<- subset(celldata,filename=="ROI_BRAC3256_6E_WT_ROI1_x1")
+# 可选：检查 celldata 坐标是否超出图像范围
+if (any(celldata_3310$x > img_width | celldata$y > img_height)) {
+  stop("celldata 中的坐标超出图像范围")
+}
+
+# Step 3: 提取每个点对应的 mask 值
+celldata_3310 <- celldata_3310 %>%
+  mutate(
+    # TIFF 是左上角为 (1,1)，所以 y 直接用（行号），x 是列号
+    normal_val = normal_mask[cbind(Location_Center_Y, Location_Center_X)],
+    tumor_val = tumor_mask[cbind(Location_Center_Y, Location_Center_X)],
+    interface_val = interface_mask[cbind(Location_Center_Y, Location_Center_X)],
+    
+    new_domain = case_when(
+      interface_val == 1 ~ "Interface",
+      tumor_val == 1 ~ "Tumour",
+      normal_val == 1 ~ "Normal",
+      TRUE ~ "n/a"
+    )
+  ) %>%
+  select(-normal_val, -tumor_val, -interface_val)
+colnames(celldata_3310)
+table(celldata_3310$new_domain)
+
+# ggplot
+library(ggplot2)
+ggplot(celldata_3310, aes(x= Location_Center_X, y = -Location_Center_Y)) +
+  geom_point(data = celldata_3310[which(celldata_3310$new_domain=="Normal"),], size = 0.01, colour = "red") +
+  geom_point(data = celldata_3310[which(celldata_3310$new_domain=="Tumour"),], size = 0.01, colour = "green") +
+    geom_point(data = celldata_3310[which(celldata_3310$new_domain=="Interface"),], size = 0.01, colour = "yellow") +
+  theme_classic() +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 8),
+        panel.background=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        strip.text = element_text(size = 8),
+        strip.background = element_rect(),
+        panel.spacing = unit(0, "mm"),
+        plot.background = element_blank())+
+  facet_wrap(~ROI_ID,nrow=1)
+# compare with previous domain
+ggplot(celldata_3310, aes(x= Location_Center_X, y = -Location_Center_Y)) +
+  geom_point(data = celldata_3310[which(celldata_3310$domain=="Normal"),], size = 0.01, colour = "red") +
+  geom_point(data = celldata_3310[which(celldata_3310$domain=="Tumour"),], size = 0.01, colour = "green") +
+    geom_point(data = celldata_3310[which(celldata_3310$domain=="Interface"),], size = 0.01, colour = "yellow") +
+  theme_classic() +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 8),
+        panel.background=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        strip.text = element_text(size = 8),
+        strip.background = element_rect(),
+        panel.spacing = unit(0, "mm"),
+        plot.background = element_blank())+
+  facet_wrap(~ROI_ID,nrow=1)
+```
+
+# read mask -->554b
+
+```{r}
+normal_mask <- readTIFF("/mnt/Data1/groupfebe/runs/Data/XIAYU/CCR2_LUNG/results/segmentation/AWBA55_4b_CCR2KO_ROI_002_2/roi_awba55_4b_ccr2ko_roi_002_2/normal_minus_interface_domain.tiff")
+tumor_mask <- readTIFF("/mnt/Data1/groupfebe/runs/Data/XIAYU/CCR2_LUNG/results/segmentation/AWBA55_4b_CCR2KO_ROI_002_2/roi_awba55_4b_ccr2ko_roi_002_2/tumour_minus_interface_domain.tiff")
+interface_mask <- readTIFF("/mnt/Data1/groupfebe/runs/Data/XIAYU/CCR2_LUNG/results/segmentation/AWBA55_4b_CCR2KO_ROI_002_2/roi_awba55_4b_ccr2ko_roi_002_2/interface_domain.tiff")
+```
+
+#
+```{r}
+# 图像尺寸
+img_height <- dim(normal_mask)[1]
+img_width <- dim(normal_mask)[2]
+unique(celldata$filename)
+celldata_554b_002<- subset(celldata,filename=="ROI_AWBA55_4B_CCR2KO_ROI2_2")
+# 可选：检查 celldata 坐标是否超出图像范围
+if (any(celldata_554b_002$x > img_width | celldata$y > img_height)) {
+  stop("celldata 中的坐标超出图像范围")
+}
+
+# Step 3: 提取每个点对应的 mask 值
+celldata_554b_002 <- celldata_554b_002 %>%
+  mutate(
+    # TIFF 是左上角为 (1,1)，所以 y 直接用（行号），x 是列号
+    normal_val = normal_mask[cbind(Location_Center_Y, Location_Center_X)],
+    tumor_val = tumor_mask[cbind(Location_Center_Y, Location_Center_X)],
+    interface_val = interface_mask[cbind(Location_Center_Y, Location_Center_X)],
+    
+    new_domain = case_when(
+      interface_val == 1 ~ "Interface",
+      tumor_val == 1 ~ "Tumour",
+      normal_val == 1 ~ "Normal",
+      TRUE ~ "n/a"
+    )
+  ) %>%
+  select(-normal_val, -tumor_val, -interface_val)
+colnames(celldata_3256)
+table(celldata_3256$new_domain)
+
+# ggplot
+library(ggplot2)
+ggplot(celldata_554b_002, aes(x= Location_Center_X, y = -Location_Center_Y)) +
+  geom_point(data = celldata_554b_002[which(celldata_554b_002$new_domain=="Normal"),], size = 0.01, colour = "red") +
+  geom_point(data = celldata_554b_002[which(celldata_554b_002$new_domain=="Tumour"),], size = 0.01, colour = "green") +
+    geom_point(data = celldata_554b_002[which(celldata_554b_002$new_domain=="Interface"),], size = 0.01, colour = "yellow") +
+  theme_classic() +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 8),
+        panel.background=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        strip.text = element_text(size = 8),
+        strip.background = element_rect(),
+        panel.spacing = unit(0, "mm"),
+        plot.background = element_blank())+
+  facet_wrap(~ROI_ID,nrow=1)
+# compare with previous domain
+ggplot(celldata_554b_002, aes(x= Location_Center_X, y = -Location_Center_Y)) +
+  geom_point(data = celldata_554b_002[which(celldata_554b_002$domain=="Normal"),], size = 0.01, colour = "red") +
+  geom_point(data = celldata_554b_002[which(celldata_554b_002$domain=="Tumour"),], size = 0.01, colour = "green") +
+    geom_point(data = celldata_554b_002[which(celldata_554b_002$domain=="Interface"),], size = 0.01, colour = "yellow") +
+  theme_classic() +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 8),
+        panel.background=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        strip.text = element_text(size = 8),
+        strip.background = element_rect(),
+        panel.spacing = unit(0, "mm"),
+        plot.background = element_blank())+
+  facet_wrap(~ROI_ID,nrow=1)
+```
+
+# read mask -->32566e
+```{r}
+normal_mask <- readTIFF("/mnt/Data1/groupfebe/runs/Data/XIAYU/CCR2_LUNG/results/segmentation/BRAC3310_6a_WT_ROI_001_1.txt_crop1/roi_brac3310_6a_wt_roi_001_1_crop1/normal_minus_interface_domain.tiff")
+tumor_mask <- readTIFF("/mnt/Data1/groupfebe/runs/Data/XIAYU/CCR2_LUNG/results/segmentation/BRAC3310_6a_WT_ROI_001_1.txt_crop1/roi_brac3310_6a_wt_roi_001_1_crop1/tumour_minus_interface_domain.tiff")
+interface_mask <- readTIFF("/mnt/Data1/groupfebe/runs/Data/XIAYU/CCR2_LUNG/results/segmentation/BRAC3310_6a_WT_ROI_001_1.txt_crop1/roi_brac3310_6a_wt_roi_001_1_crop1/interface_domain.tiff")
+```
+
+#
+```{r}
+# 图像尺寸
+img_height <- dim(normal_mask)[1]
+img_width <- dim(normal_mask)[2]
+unique(celldata$filename)
+celldata_3310<- subset(celldata,filename=="ROI_BRAC3310_6A_WT_ROI1_x1")
+# 可选：检查 celldata 坐标是否超出图像范围
+if (any(celldata_3310$x > img_width | celldata$y > img_height)) {
+  stop("celldata 中的坐标超出图像范围")
+}
+
+# Step 3: 提取每个点对应的 mask 值
+celldata_3310 <- celldata_3310 %>%
+  mutate(
+    # TIFF 是左上角为 (1,1)，所以 y 直接用（行号），x 是列号
+    normal_val = normal_mask[cbind(Location_Center_Y, Location_Center_X)],
+    tumor_val = tumor_mask[cbind(Location_Center_Y, Location_Center_X)],
+    interface_val = interface_mask[cbind(Location_Center_Y, Location_Center_X)],
+    
+    new_domain = case_when(
+      interface_val == 1 ~ "Interface",
+      tumor_val == 1 ~ "Tumour",
+      normal_val == 1 ~ "Normal",
+      TRUE ~ "n/a"
+    )
+  ) %>%
+  select(-normal_val, -tumor_val, -interface_val)
+colnames(celldata_3310)
+table(celldata_3310$new_domain)
+
+# ggplot
+library(ggplot2)
+ggplot(celldata_3310, aes(x= Location_Center_X, y = -Location_Center_Y)) +
+  geom_point(data = celldata_3310[which(celldata_3310$new_domain=="Normal"),], size = 0.01, colour = "red") +
+  geom_point(data = celldata_3310[which(celldata_3310$new_domain=="Tumour"),], size = 0.01, colour = "green") +
+    geom_point(data = celldata_3310[which(celldata_3310$new_domain=="Interface"),], size = 0.01, colour = "yellow") +
+  theme_classic() +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 8),
+        panel.background=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        strip.text = element_text(size = 8),
+        strip.background = element_rect(),
+        panel.spacing = unit(0, "mm"),
+        plot.background = element_blank())+
+  facet_wrap(~ROI_ID,nrow=1)
+# compare with previous domain
+ggplot(celldata_3310, aes(x= Location_Center_X, y = -Location_Center_Y)) +
+  geom_point(data = celldata_3310[which(celldata_3310$domain=="Normal"),], size = 0.01, colour = "red") +
+  geom_point(data = celldata_3310[which(celldata_3310$domain=="Tumour"),], size = 0.01, colour = "green") +
+    geom_point(data = celldata_3310[which(celldata_3310$domain=="Interface"),], size = 0.01, colour = "yellow") +
+  theme_classic() +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 8),
+        panel.background=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        strip.text = element_text(size = 8),
+        strip.background = element_rect(),
+        panel.spacing = unit(0, "mm"),
+        plot.background = element_blank())+
+  facet_wrap(~ROI_ID,nrow=1)
+```
+
+## merge new domain back
+```{r}
+# 初始化 new_domain 列
+celldata$new_domain <- celldata$domain
+celldata$new_domain <- as.character(celldata$domain)
+
+
+# 创建一个 list 存放所有 ROI 的子集数据（注意都要包含 new_domain 列）
+roi_list <- list(celldata_554a, celldata_554b_002, celldata_3256, celldata_3310)
+
+# 依次替换每个 ROI 的对应部分
+for (roi_df in roi_list) {
+  celldata <- celldata %>%
+    left_join(
+      roi_df %>% select(filename, Location_Center_X, Location_Center_Y, new_domain),
+      by = c("filename", "Location_Center_X", "Location_Center_Y"),
+      suffix = c("", ".updated")
+    ) %>%
+    mutate(
+      new_domain = ifelse(!is.na(new_domain.updated), new_domain.updated, new_domain)
+    ) %>%
+    select(-new_domain.updated)
+}
+
+unique(celldata$new_domain)
+table(celldata$domain)
+table(celldata$new_domain)
+```
+
+## check from ggplot 
+```{r}
+#original domain
+ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
+  geom_point(data = celldata[which(celldata$domain=="Normal"),], size = 0.01, colour = "red") +
+  geom_point(data = celldata[which(celldata$domain=="Tumour"),], size = 0.01, colour = "green") +
+    geom_point(data = celldata[which(celldata$domain=="Interface"),], size = 0.01, colour = "yellow") +
+  theme_classic() +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 8),
+        panel.background=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        strip.text = element_text(size = 8),
+        strip.background = element_rect(),
+        panel.spacing = unit(0, "mm"),
+        plot.background = element_blank())+
+  facet_wrap(~ROI_ID,nrow=3)
+#new domain
+ggplot(celldata, aes(x= Location_Center_X, y = -Location_Center_Y)) +
+  geom_point(data = celldata[which(celldata$new_domain=="Normal"),], size = 0.01, colour = "red") +
+  geom_point(data = celldata[which(celldata$new_domain=="Tumour"),], size = 0.01, colour = "green") +
+    geom_point(data = celldata[which(celldata$new_domain=="Interface"),], size = 0.01, colour = "yellow") +
+  theme_classic() +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.title = element_blank(),
+        legend.text = element_text(size = 8),
+        panel.background=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        strip.text = element_text(size = 8),
+        strip.background = element_rect(),
+        panel.spacing = unit(0, "mm"),
+        plot.background = element_blank())+
+  facet_wrap(~ROI_ID,nrow=3)
+#write csv
+date<- format(Sys.Date(), "%y%m%d")
+output_file = paste0(OUTPUT_PATH,"/", date, "_celldata_newdomain.csv")#OUTPUT_PATH
+output_file
+write.csv(celldata, file = output_file, row.names = F) 
+
+```
+
