@@ -76,9 +76,11 @@ print(top20_cd103)
 celldata$anncluster = stringr::str_pad(celldata$k20, 2, side="left", pad="0") 
 unique(celldata$anncluster)
 # Split clusters based on thresholds for marker intensities
-celldata[which(celldata$anncluster == "12"
-               & celldata$MI_Foxp3 >= 0.3), "anncluster"] = "12A"
-celldata[which(celldata$anncluster == "12"), "anncluster"] = "12B"
+celldata[which(celldata$anncluster == "12"), "anncluster"] <- "12B"
+celldata[which(celldata$anncluster == "12B" & celldata$MI_Foxp3 >= 0.3), "anncluster"] <- "12A"
+celldata[which(celldata$anncluster == "12B" & 
+                 celldata$MI_CD8a >= 0.5 & celldata$MI_CD4 < 1), "anncluster"] <- "12C"
+
 ##  21  split  to neutrophils and CD11b single positive celsl
 
 
@@ -110,6 +112,7 @@ celldata[which(celldata$anncluster == "10"), "anncluster"] = "10_Tumour" # umap 
 celldata[which(celldata$anncluster == "11"), "anncluster"] = "11_Endothelium"# also express ly6c
 celldata[which(celldata$anncluster == "12A"), "anncluster"] = "12A_Tregs" #
 celldata[which(celldata$anncluster == "12B"), "anncluster"] = "12B_T cell CD4" #
+celldata[which(celldata$anncluster == "12C"), "anncluster"] = "12C_T cell CD8" #
 celldata[which(celldata$anncluster == "13"), "anncluster"] = "13_Endothelium"#Endotheliem ,also MHCII+
 celldata[which(celldata$anncluster == "14"), "anncluster"] = "14_Tumour"
 celldata[which(celldata$anncluster == "15"), "anncluster"] = "15_Tumour"
@@ -364,3 +367,6 @@ write.csv(celldata_clean, file = output_file, row.names = F)
 
 table(celldata_clean$anncluster)
 table(celldata_clean$annotation)
+
+
+
